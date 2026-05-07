@@ -13,4 +13,5 @@ public interface PricingRequestRepository extends JpaRepository<PricingRequest, 
     List<PricingRequest> findByStatus(PricingRequestStatus status);
     List<PricingRequest> findByStatusAndProduct_Status(PricingRequestStatus status, ProductStatus productStatus);
     Optional<PricingRequest> findTopByProductOrderByCreatedAtDesc(Product product);
+    List<PricingRequest> findByProduct(Product product);
 }
