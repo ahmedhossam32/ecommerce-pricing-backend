@@ -56,6 +56,27 @@ public class EmailServiceImpl implements EmailService {
         send(toEmail, "Your product listing was not approved", body);
     }
 
+    @Override
+    public void sendOverrideEmail(String toEmail, String sellerName, String productName,
+                                   double oldPrice, double newPrice, String adminNote) {
+        String body = String.format("""
+                Hi %s,
+
+                Your product "%s" price has been updated by the admin.
+
+                Previous price: $%.2f
+                New price: $%.2f
+
+                Admin note: %s
+
+                Best regards,
+                The Marketplace Team
+                """, sellerName, productName, oldPrice, newPrice,
+                adminNote != null ? adminNote : "No additional notes.");
+
+        send(toEmail, "Your product price has been updated", body);
+    }
+
     private void send(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();

@@ -125,15 +125,31 @@ public class AdminServiceImpl implements AdminService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
+        double oldPrice = product.getPrice() != null
+                ? product.getPrice().doubleValue() : 0.0;
         double newPrice = request.getNewPrice();
         String brand = product.getBrand() != null ? product.getBrand() : "UNKNOWN";
+        User seller = product.getSeller();
 
         product.setPrice(BigDecimal.valueOf(newPrice));
         productRepository.save(product);
 
         routingService.cacheApprovedRange(brand, product.getCategory(), newPrice);
 
-        return Map.of("message", "Price overridden and cache updated.", "newPrice", String.valueOf(newPrice));
+        emailService.sendOverrideEmail(
+                seller.getEmail(),
+                seller.getName(),
+                product.getName(),
+                oldPrice,
+                newPrice,
+                request.getAdminNote()
+        );
+
+        return Map.of(
+                "message", "Price overridden, cache updated and seller notified.",
+                "oldPrice", String.valueOf(oldPrice),
+                "newPrice", String.valueOf(newPrice)
+        );
     }
 
     @Override
