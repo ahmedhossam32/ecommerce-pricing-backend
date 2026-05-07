@@ -1,0 +1,45 @@
+spring.application.name=pricing-engine
+server.port=8080
+
+spring.docker.compose.enabled=false
+
+# Database
+spring.datasource.url=jdbc:postgresql://localhost:5432/ecommerce_gp
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# Redis
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+
+# JWT
+app.jwt.secret=YOUR_JWT_SECRET_KEY_HERE
+app.jwt.expiration=86400000
+app.jwt.refresh-expiration=604800000
+
+# OpenAI
+spring.ai.openai.api-key=YOUR_OPENAI_API_KEY
+spring.ai.openai.chat.options.model=gpt-4o-mini
+spring.ai.openai.chat.options.temperature=0.1
+
+# ML Service
+ml.service.url=http://localhost:8000
+
+# Email
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=YOUR_EMAIL@gmail.com
+spring.mail.password=YOUR_GMAIL_APP_PASSWORD
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Swagger
+springdoc.swagger-ui.path=/swagger-ui.html
+
+# Category stats seed
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true

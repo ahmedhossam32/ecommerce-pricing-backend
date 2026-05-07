@@ -1,0 +1,23 @@
+package com.ecommerce.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductResponse {
+    private Long productId;
+    private String name;
+    private String category;
+    private String brand;
+    private String status;
+    private Double price;
+    private Double suggestedPrice;
+    private LocalDateTime createdAt;
+}

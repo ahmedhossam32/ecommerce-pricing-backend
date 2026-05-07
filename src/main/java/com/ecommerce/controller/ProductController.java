@@ -1,0 +1,68 @@
+package com.ecommerce.controller;
+
+import com.ecommerce.dto.request.AcceptPriceRequest;
+import com.ecommerce.dto.request.DisputePriceRequest;
+import com.ecommerce.dto.request.ProductListingRequest;
+import com.ecommerce.dto.response.AcceptPriceResponse;
+import com.ecommerce.dto.response.DisputeResponse;
+import com.ecommerce.dto.response.ProductResponse;
+import com.ecommerce.dto.response.PricingSuggestionResponse;
+import com.ecommerce.entity.User;
+import com.ecommerce.service.product.ProductService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class ProductController {
+
+    private final ProductService productService;
+
+    @PostMapping("/products")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<PricingSuggestionResponse> listProduct(
+            @Valid @RequestBody ProductListingRequest request,
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.listProduct(request, seller));
+    }
+
+    @PostMapping("/products/{id}/accept")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<AcceptPriceResponse> acceptPrice(
+            @PathVariable Long id,
+            @RequestBody(required = false) AcceptPriceRequest request,
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.acceptPrice(id, request, seller));
+    }
+
+    @PostMapping("/products/{id}/dispute")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<DisputeResponse> disputePrice(
+            @PathVariable Long id,
+            @Valid @RequestBody DisputePriceRequest request,
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.disputePrice(id, request, seller));
+    }
+
+    @GetMapping("/seller/products")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<List<ProductResponse>> getSellerProducts(
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.getSellerProducts(seller));
+    }
+
+    @GetMapping("/products/{id}")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ProductResponse> getProduct(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.getProductById(id, seller));
+    }
+}
