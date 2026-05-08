@@ -105,6 +105,22 @@ public class BuyerServiceImpl implements BuyerService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getMyOrders(User buyer) {
+        return orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyer.getId())
+                .stream()
+                .map(o -> OrderResponse.builder()
+                        .orderId(o.getId())
+                        .productId(o.getProduct().getId())
+                        .productName(o.getProduct().getName())
+                        .price(o.getPriceAtPurchase().doubleValue())
+                        .buyerName(o.getBuyer().getName())
+                        .message("Order placed successfully!")
+                        .build())
+                .toList();
+    }
+
     private BuyerProductResponse toSummaryResponse(Product p) {
         return BuyerProductResponse.builder()
                 .productId(p.getId())

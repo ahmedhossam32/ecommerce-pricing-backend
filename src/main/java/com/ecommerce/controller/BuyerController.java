@@ -43,4 +43,11 @@ public class BuyerController {
             @AuthenticationPrincipal User buyer) {
         return ResponseEntity.ok(buyerService.placeOrder(request, buyer));
     }
+
+    @GetMapping("/api/orders/my")
+    @PreAuthorize("hasRole('BUYER')")
+    public ResponseEntity<List<OrderResponse>> getMyOrders(
+            @AuthenticationPrincipal User buyer) {
+        return ResponseEntity.ok(buyerService.getMyOrders(buyer));
+    }
 }
