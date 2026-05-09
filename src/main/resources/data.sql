@@ -72,3 +72,14 @@ VALUES
     ('toys', 117.55, 4.16, 1, 'credit_card', 6),
     ('watches_gifts', 201.14, 4.02, 1, 'credit_card', 12)
     ON CONFLICT (category) DO NOTHING;
+
+-- Category bounds updates for luxury/USD products
+UPDATE category_bounds SET max_price = 5000 WHERE category = 'fashion_bags_accessories';
+UPDATE category_bounds SET max_price = 3000 WHERE category = 'watches_gifts';
+UPDATE category_bounds SET max_price = 2000 WHERE category = 'fashion_male_clothing';
+UPDATE category_bounds SET max_price = 2000 WHERE category = 'fashio_female_clothing';
+UPDATE category_bounds SET max_price = 1000 WHERE category = 'fashion_shoes';
+UPDATE category_bounds SET max_price = 2000 WHERE category = 'electronics';
+UPDATE category_bounds SET max_price = 3000 WHERE category = 'computers';
+UPDATE category_bounds SET max_price = 2000 WHERE category = 'telephony';
+UPDATE category_bounds SET max_price = 1500 WHERE category = 'audio';
