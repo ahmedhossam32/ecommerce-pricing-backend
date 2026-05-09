@@ -7,12 +7,14 @@ import com.ecommerce.dto.response.AcceptPriceResponse;
 import com.ecommerce.dto.response.DisputeResponse;
 import com.ecommerce.dto.response.ProductResponse;
 import com.ecommerce.dto.response.PricingSuggestionResponse;
+import com.ecommerce.dto.response.SellerDashboardResponse;
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.PricingRequest;
 import com.ecommerce.entity.User;
 import com.ecommerce.enums.PricingRequestStatus;
 import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.exception.ResourceNotFoundException;
+import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.pricing.PricingService;
@@ -32,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private final PricingRequestRepository pricingRequestRepository;
     private final PricingService pricingService;
     private final RoutingService routingService;
+    private final OrderRepository orderRepository;
 
     @Override
     @Transactional
@@ -195,6 +198,21 @@ public class ProductServiceImpl implements ProductService {
                 .orElse(null);
 
         return toResponse(product, suggestedPrice);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SellerDashboardResponse getDashboard(User seller) {
+        List<Product> products = productRepository.findBySeller(seller);
+        Double revenue = orderRepository.calculateRevenueForSeller(seller);
+        return SellerDashboardResponse.builder()
+                .totalProducts(products.size())
+                .liveProducts(products.stream().filter(p -> p.getStatus() == ProductStatus.LIVE).count())
+                .pendingReview(products.stream().filter(p -> p.getStatus() == ProductStatus.PENDING_REVIEW).count())
+                .rejected(products.stream().filter(p -> p.getStatus() == ProductStatus.REJECTED).count())
+                .draft(products.stream().filter(p -> p.getStatus() == ProductStatus.DRAFT).count())
+                .totalRevenue(revenue != null ? revenue : 0.0)
+                .build();
     }
 
     private ProductResponse toResponse(Product p, Double suggestedPrice) {

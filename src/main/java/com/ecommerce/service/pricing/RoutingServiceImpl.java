@@ -3,6 +3,8 @@ package com.ecommerce.service.pricing;
 import com.ecommerce.entity.CategoryBounds;
 import com.ecommerce.repository.CategoryBoundsRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class RoutingServiceImpl implements RoutingService {
+
+    private static final Logger log = LoggerFactory.getLogger(RoutingServiceImpl.class);
 
     private final StringRedisTemplate redisTemplate;
     private final CategoryBoundsRepository categoryBoundsRepository;
@@ -26,7 +30,7 @@ public class RoutingServiceImpl implements RoutingService {
         String cacheKey = cacheKey(brand, category, price);
         String cached = redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
-            System.out.println("CACHE HITT");
+            log.info("Cache hit for key: {}", cacheKey);
             String[] parts = cached.split(":");
             if (parts.length == 2) {
                 try {
@@ -40,9 +44,9 @@ public class RoutingServiceImpl implements RoutingService {
         // Layer 2 — Category bounds check
         Optional<CategoryBounds> bounds = categoryBoundsRepository
                 .findByCategory(category.toLowerCase());
-        System.out.println("=== BOUNDS CHECK: category=" + category.toLowerCase() + " found=" + bounds.isPresent() + " ===");
+        log.debug("=== BOUNDS CHECK: category={} found={} ===", category.toLowerCase(), bounds.isPresent());
         if (bounds.isPresent()) {
-            System.out.println("=== BOUNDS: min=" + bounds.get().getMinPrice() + " max=" + bounds.get().getMaxPrice() + " price=" + price + " ===");
+            log.debug("=== BOUNDS: min={} max={} price={} ===", bounds.get().getMinPrice(), bounds.get().getMaxPrice(), price);
             double minBound = bounds.get().getMinPrice().doubleValue();
             double maxBound = bounds.get().getMaxPrice().doubleValue();
             if (price < minBound || price > maxBound) return "PENDING_ADMIN";

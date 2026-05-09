@@ -7,6 +7,7 @@ import com.ecommerce.dto.response.AcceptPriceResponse;
 import com.ecommerce.dto.response.DisputeResponse;
 import com.ecommerce.dto.response.ProductResponse;
 import com.ecommerce.dto.response.PricingSuggestionResponse;
+import com.ecommerce.dto.response.SellerDashboardResponse;
 import com.ecommerce.entity.User;
 import com.ecommerce.service.product.ProductService;
 import jakarta.validation.Valid;
@@ -64,5 +65,12 @@ public class ProductController {
             @PathVariable Long id,
             @AuthenticationPrincipal User seller) {
         return ResponseEntity.ok(productService.getProductById(id, seller));
+    }
+
+    @GetMapping("/seller/dashboard")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<SellerDashboardResponse> getDashboard(
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.getDashboard(seller));
     }
 }

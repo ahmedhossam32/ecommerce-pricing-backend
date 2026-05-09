@@ -9,11 +9,15 @@ import com.ecommerce.entity.CategoryStats;
 import com.ecommerce.entity.User;
 import com.ecommerce.repository.CategoryStatsRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class PricingServiceImpl implements PricingService {
+
+    private static final Logger log = LoggerFactory.getLogger(PricingServiceImpl.class);
 
     private final LLMService llmService;
     private final MLService mlService;
@@ -39,16 +43,16 @@ public class PricingServiceImpl implements PricingService {
         MLResponse mlResponse = mlService.predict(mlRequest);
         double mlBaseline = mlResponse.getPredictedPrice();
 
-        System.out.println("=== ML BASELINE: " + mlBaseline + " ===");
-        System.out.println("=== CATEGORY: " + request.getCategory() + " ===");
+        log.info("=== ML BASELINE: {} ===", mlBaseline);
+        log.debug("=== CATEGORY: {} ===", request.getCategory());
 
         // 5. LLM Call 2: market price + confidence + multiplier (runs after ML)
         LLMResponse pricing = llmService.analyzePricing(request.getDescription(), mlBaseline);
 
-        System.out.println("=== LLM CONFIDENCE: " + pricing.getConfidence() + " ===");
-        System.out.println("=== LLM PRICE RANGE: " + pricing.getMarketPriceMin() + " - " + pricing.getMarketPriceMax() + " ===");
-        System.out.println("=== LLM BRAND: " + extraction.getBrand() + " ===");
-        System.out.println("=== LLM REASONING: " + pricing.getReasoning() + " ===");
+        log.info("=== LLM CONFIDENCE: {} ===", pricing.getConfidence());
+        log.info("=== LLM PRICE RANGE: {} - {} ===", pricing.getMarketPriceMin(), pricing.getMarketPriceMax());
+        log.debug("=== LLM BRAND: {} ===", extraction.getBrand());
+        log.debug("=== LLM REASONING: {} ===", pricing.getReasoning());
 
         // 6. Combine ML + LLM into suggested price
         double suggested = computeSuggestedPrice(pricing, mlBaseline);
