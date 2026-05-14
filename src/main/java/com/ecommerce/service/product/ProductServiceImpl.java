@@ -219,11 +219,14 @@ public class ProductServiceImpl implements ProductService {
         return ProductResponse.builder()
                 .productId(p.getId())
                 .name(p.getName())
+                .description(p.getDescription())
                 .category(p.getCategory())
                 .brand(p.getBrand())
                 .status(p.getStatus().name())
                 .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
                 .suggestedPrice(suggestedPrice)
+                .sellerName(p.getSeller() != null ? p.getSeller().getName() : null)
+                .weight(p.getWeight())
                 .createdAt(p.getCreatedAt())
                 .build();
     }

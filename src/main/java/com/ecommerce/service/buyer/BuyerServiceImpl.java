@@ -125,10 +125,12 @@ public class BuyerServiceImpl implements BuyerService {
         return BuyerProductResponse.builder()
                 .productId(p.getId())
                 .name(p.getName())
+                .description(p.getDescription())
                 .category(p.getCategory())
                 .brand(p.getBrand())
                 .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
                 .sellerName(p.getSeller().getName())
+                .weight(p.getWeight())
                 .createdAt(p.getCreatedAt())
                 .build();
     }
