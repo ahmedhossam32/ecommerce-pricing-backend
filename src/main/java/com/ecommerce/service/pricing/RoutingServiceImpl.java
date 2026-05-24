@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +67,7 @@ public class RoutingServiceImpl implements RoutingService {
         String key = cacheKey(brand, category, approvedPrice);
         double min = Math.round(approvedPrice * 0.85 * 100.0) / 100.0;
         double max = Math.round(approvedPrice * 1.15 * 100.0) / 100.0;
-        redisTemplate.opsForValue().set(key, min + ":" + max);
+        redisTemplate.opsForValue().set(key, min + ":" + max, 30, TimeUnit.DAYS);
     }
 
     private String cacheKey(String brand, String category, double price) {
