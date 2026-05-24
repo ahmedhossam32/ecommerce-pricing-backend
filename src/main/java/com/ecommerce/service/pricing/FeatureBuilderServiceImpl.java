@@ -35,7 +35,7 @@ public class FeatureBuilderServiceImpl implements FeatureBuilderService {
                 .productHeightCm(side)
                 .productWidthCm(side)
                 .productDescriptionLenght(request.getDescription().length())
-                .productNameLenght(request.getDescription().length())
+                .productNameLength(request.getDescription().length())
 
                 // Category
                 .productCategoryNameEnglish(request.getCategory())

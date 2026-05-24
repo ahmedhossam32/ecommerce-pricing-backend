@@ -130,6 +130,9 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
 
         Product product = pr.getProduct();
+        if (product.getStatus() != ProductStatus.PENDING_REVIEW) {
+            throw new IllegalStateException("Product is not pending review and cannot be rejected");
+        }
         User seller = product.getSeller();
 
         double suggested = pr.getSuggestedPrice().doubleValue();
@@ -153,6 +156,9 @@ public class AdminServiceImpl implements AdminService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
+        if (product.getStatus() != ProductStatus.LIVE) {
+            throw new IllegalStateException("Only LIVE products can have their price overridden");
+        }
         double oldPrice = product.getPrice() != null
                 ? product.getPrice().doubleValue() : 0.0;
         double newPrice = request.getNewPrice();

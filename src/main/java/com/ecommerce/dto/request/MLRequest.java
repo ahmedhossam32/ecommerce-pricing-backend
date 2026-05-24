@@ -33,7 +33,7 @@ public class MLRequest {
     private Integer productDescriptionLenght;
 
     @JsonProperty("product_name_lenght")
-    private Integer productNameLenght;
+    private Integer productNameLength;
 
     @JsonProperty("product_category_name_english")
     private String productCategoryNameEnglish;
