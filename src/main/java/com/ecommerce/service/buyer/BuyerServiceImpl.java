@@ -46,6 +46,9 @@ public class BuyerServiceImpl implements BuyerService {
         if (product.getStatus() != ProductStatus.LIVE) {
             throw new ResourceNotFoundException("Product not found");
         }
+        if (product.getImageUrls() == null || product.getImageUrls().isEmpty()) {
+            throw new ResourceNotFoundException("Product not found");
+        }
         return toDetailResponse(product);
     }
 
