@@ -38,6 +38,9 @@ public class User implements UserDetails {
     @Builder.Default
     private AuthProvider provider = AuthProvider.LOCAL;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

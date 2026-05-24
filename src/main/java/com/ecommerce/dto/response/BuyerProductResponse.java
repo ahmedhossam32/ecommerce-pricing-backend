@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,4 +23,6 @@ public class BuyerProductResponse {
     private Double weight;
     private Integer photosQty;
     private LocalDateTime createdAt;
+    private List<String> imageUrls;
+    private String sellerProfilePictureUrl;
 }

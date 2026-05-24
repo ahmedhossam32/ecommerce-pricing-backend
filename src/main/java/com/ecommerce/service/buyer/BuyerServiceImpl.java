@@ -33,6 +33,7 @@ public class BuyerServiceImpl implements BuyerService {
     public List<BuyerProductResponse> getAllLiveProducts() {
         return productRepository.findByStatus(ProductStatus.LIVE)
                 .stream()
+                .filter(p -> p.getImageUrls() != null && !p.getImageUrls().isEmpty())
                 .map(this::toSummaryResponse)
                 .toList();
     }
@@ -132,6 +133,12 @@ public class BuyerServiceImpl implements BuyerService {
                 .sellerName(p.getSeller().getName())
                 .weight(p.getWeight())
                 .createdAt(p.getCreatedAt())
+                .imageUrls(p.getImageUrls())
+                .sellerProfilePictureUrl(
+                    p.getSeller().getProfilePictureUrl() != null
+                        ? p.getSeller().getProfilePictureUrl()
+                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
+                )
                 .build();
     }
 
@@ -147,6 +154,12 @@ public class BuyerServiceImpl implements BuyerService {
                 .weight(p.getWeight())
                 .photosQty(p.getPhotosQty())
                 .createdAt(p.getCreatedAt())
+                .imageUrls(p.getImageUrls())
+                .sellerProfilePictureUrl(
+                    p.getSeller().getProfilePictureUrl() != null
+                        ? p.getSeller().getProfilePictureUrl()
+                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
+                )
                 .build();
     }
 

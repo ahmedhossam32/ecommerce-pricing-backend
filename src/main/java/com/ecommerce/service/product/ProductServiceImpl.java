@@ -228,6 +228,7 @@ public class ProductServiceImpl implements ProductService {
                 .sellerName(p.getSeller() != null ? p.getSeller().getName() : null)
                 .weight(p.getWeight())
                 .createdAt(p.getCreatedAt())
+                .imageUrls(p.getImageUrls())
                 .build();
     }
 
