@@ -175,6 +175,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductResponse> getSellerProducts(User seller) {
         return productRepository.findBySeller(seller).stream()
                 .map(p -> {
@@ -188,6 +189,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(Long productId, User seller) {
         Product product = productRepository.findByIdAndSeller(productId, seller)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));

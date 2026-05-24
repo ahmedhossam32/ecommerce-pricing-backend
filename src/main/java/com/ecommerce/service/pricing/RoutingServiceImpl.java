@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ public class RoutingServiceImpl implements RoutingService {
     private static final String PREFIX = "pricing:";
 
     @Override
+    @Transactional(readOnly = true)
     public String determineStatus(double price, String brand, String category, String confidence) {
 
 

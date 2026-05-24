@@ -48,8 +48,47 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Transactional
     public Map<String, String> approveRequest(Long requestId, ApproveRequest request) {
+        ApprovalData data = doApproveTransaction(requestId, request);
+        emailService.sendApprovalEmail(
+                data.sellerEmail(), data.sellerName(),
+                data.productName(), data.approvedPrice(), data.adminNote());
+        return data.response();
+    }
+
+    @Override
+    public Map<String, String> rejectRequest(Long requestId, RejectRequest request) {
+        RejectionData data = doRejectTransaction(requestId, request);
+        emailService.sendRejectionEmail(
+                data.sellerEmail(), data.sellerName(),
+                data.productName(), data.rejectionReason(), data.minRange(), data.maxRange());
+        return data.response();
+    }
+
+    @Override
+    public Map<String, String> overridePrice(Long productId, OverrideRequest request) {
+        OverrideData data = doOverrideTransaction(productId, request);
+        emailService.sendOverrideEmail(
+                data.sellerEmail(), data.sellerName(),
+                data.productName(), data.oldPrice(), data.newPrice(), data.adminNote());
+        return data.response();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminStatsResponse getStats() {
+        return AdminStatsResponse.builder()
+                .totalProducts(productRepository.count())
+                .liveProducts(productRepository.countByStatus(ProductStatus.LIVE))
+                .pendingReview(productRepository.countByStatus(ProductStatus.PENDING_REVIEW))
+                .rejectedProducts(productRepository.countByStatus(ProductStatus.REJECTED))
+                .totalSellers(userRepository.countByRole(Role.SELLER))
+                .totalApprovedDecisions(approvedDecisionRepository.count())
+                .build();
+    }
+
+    @Transactional
+    private ApprovalData doApproveTransaction(Long requestId, ApproveRequest request) {
         PricingRequest pr = pricingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
 
@@ -63,16 +102,13 @@ public class AdminServiceImpl implements AdminService {
         double approvedMax = round(approvedPrice * 1.15);
         String brand = pr.getBrand() != null ? pr.getBrand() : "UNKNOWN";
 
-        // Update product
         product.setPrice(BigDecimal.valueOf(approvedPrice));
         product.setStatus(ProductStatus.LIVE);
         productRepository.save(product);
 
-        // Update pricing request
         pr.setStatus(PricingRequestStatus.APPROVED);
         pricingRequestRepository.save(pr);
 
-        // Persist approved decision to PostgreSQL
         approvedDecisionRepository.save(ApprovedDecision.builder()
                 .brand(brand)
                 .category(product.getCategory())
@@ -80,20 +116,16 @@ public class AdminServiceImpl implements AdminService {
                 .approvedMax(BigDecimal.valueOf(approvedMax))
                 .build());
 
-        // Cache in Redis
         routingService.cacheApprovedRange(brand, product.getCategory(), approvedPrice);
 
-        // Email seller
-        emailService.sendApprovalEmail(
-                seller.getEmail(), seller.getName(),
-                product.getName(), approvedPrice, request.getAdminNote());
-
-        return Map.of("message", "Product approved and seller notified.", "status", "APPROVED");
+        return new ApprovalData(
+                seller.getEmail(), seller.getName(), product.getName(),
+                approvedPrice, request.getAdminNote(),
+                Map.of("message", "Product approved and seller notified.", "status", "APPROVED"));
     }
 
-    @Override
     @Transactional
-    public Map<String, String> rejectRequest(Long requestId, RejectRequest request) {
+    private RejectionData doRejectTransaction(Long requestId, RejectRequest request) {
         PricingRequest pr = pricingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
 
@@ -104,24 +136,20 @@ public class AdminServiceImpl implements AdminService {
         double minRange = round(suggested * 0.85);
         double maxRange = round(suggested * 1.15);
 
-        // Update product and pricing request
         product.setStatus(ProductStatus.REJECTED);
         productRepository.save(product);
 
         pr.setStatus(PricingRequestStatus.REJECTED);
         pricingRequestRepository.save(pr);
 
-        // Email seller
-        emailService.sendRejectionEmail(
-                seller.getEmail(), seller.getName(),
-                product.getName(), request.getRejectionReason(), minRange, maxRange);
-
-        return Map.of("message", "Product rejected and seller notified.", "status", "REJECTED");
+        return new RejectionData(
+                seller.getEmail(), seller.getName(), product.getName(),
+                request.getRejectionReason(), minRange, maxRange,
+                Map.of("message", "Product rejected and seller notified.", "status", "REJECTED"));
     }
 
-    @Override
     @Transactional
-    public Map<String, String> overridePrice(Long productId, OverrideRequest request) {
+    private OverrideData doOverrideTransaction(Long productId, OverrideRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
@@ -136,32 +164,13 @@ public class AdminServiceImpl implements AdminService {
 
         routingService.cacheApprovedRange(brand, product.getCategory(), newPrice);
 
-        emailService.sendOverrideEmail(
-                seller.getEmail(),
-                seller.getName(),
-                product.getName(),
-                oldPrice,
-                newPrice,
-                request.getAdminNote()
-        );
-
-        return Map.of(
-                "message", "Price overridden, cache updated and seller notified.",
-                "oldPrice", String.valueOf(oldPrice),
-                "newPrice", String.valueOf(newPrice)
-        );
-    }
-
-    @Override
-    public AdminStatsResponse getStats() {
-        return AdminStatsResponse.builder()
-                .totalProducts(productRepository.count())
-                .liveProducts(productRepository.countByStatus(ProductStatus.LIVE))
-                .pendingReview(productRepository.countByStatus(ProductStatus.PENDING_REVIEW))
-                .rejectedProducts(productRepository.countByStatus(ProductStatus.REJECTED))
-                .totalSellers(userRepository.countByRole(Role.SELLER))
-                .totalApprovedDecisions(approvedDecisionRepository.count())
-                .build();
+        return new OverrideData(
+                seller.getEmail(), seller.getName(), product.getName(),
+                oldPrice, newPrice, request.getAdminNote(),
+                Map.of(
+                        "message", "Price overridden, cache updated and seller notified.",
+                        "oldPrice", String.valueOf(oldPrice),
+                        "newPrice", String.valueOf(newPrice)));
     }
 
     private AdminRequestResponse toAdminResponse(PricingRequest pr) {
@@ -189,4 +198,33 @@ public class AdminServiceImpl implements AdminService {
     private double round(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
+
+    private record ApprovalData(
+            String sellerEmail,
+            String sellerName,
+            String productName,
+            double approvedPrice,
+            String adminNote,
+            Map<String, String> response
+    ) {}
+
+    private record RejectionData(
+            String sellerEmail,
+            String sellerName,
+            String productName,
+            String rejectionReason,
+            double minRange,
+            double maxRange,
+            Map<String, String> response
+    ) {}
+
+    private record OverrideData(
+            String sellerEmail,
+            String sellerName,
+            String productName,
+            double oldPrice,
+            double newPrice,
+            String adminNote,
+            Map<String, String> response
+    ) {}
 }
