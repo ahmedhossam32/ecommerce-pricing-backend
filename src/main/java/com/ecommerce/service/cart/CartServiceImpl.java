@@ -68,8 +68,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public void clearCart(User buyer) {
-        cartItemRepository.findByBuyer(buyer)
-                .forEach(cartItemRepository::delete);
+        cartItemRepository.deleteAllByBuyer(buyer);
     }
 
     private CartResponse toResponse(CartItem item) {
