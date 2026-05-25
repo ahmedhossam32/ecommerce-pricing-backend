@@ -27,4 +27,5 @@ public class AdminRequestResponse {
     private String llmConfidence;
     private Double mlBaselinePrice;
     private LocalDateTime createdAt;
+    private String requestType;
 }

@@ -198,6 +198,7 @@ public class AdminServiceImpl implements AdminService {
                 .llmConfidence(pr.getLlmConfidence())
                 .mlBaselinePrice(pr.getMlBaselinePrice() != null ? pr.getMlBaselinePrice().doubleValue() : null)
                 .createdAt(pr.getCreatedAt())
+                .requestType(pr.getSellerReasoning() != null && pr.getSellerPrice() != null ? "DISPUTE" : "NEW_LISTING")
                 .build();
     }
 
