@@ -105,6 +105,8 @@ public class BuyerServiceImpl implements BuyerService {
                 .productName(product.getName())
                 .price(product.getPrice().doubleValue())
                 .buyerName(buyer.getName())
+                .sellerName(product.getSeller().getName())
+                .createdAt(order.getCreatedAt())
                 .message("Order placed successfully!")
                 .build();
     }
@@ -120,6 +122,8 @@ public class BuyerServiceImpl implements BuyerService {
                         .productName(o.getProduct().getName())
                         .price(o.getPriceAtPurchase().doubleValue())
                         .buyerName(o.getBuyer().getName())
+                        .sellerName(o.getProduct().getSeller().getName())
+                        .createdAt(o.getCreatedAt())
                         .message("Order placed successfully!")
                         .build())
                 .toList();
