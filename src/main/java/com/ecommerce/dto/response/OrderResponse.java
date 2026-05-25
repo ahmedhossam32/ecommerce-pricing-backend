@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,4 +21,6 @@ public class OrderResponse {
     private String sellerName;
     private LocalDateTime createdAt;
     private String message;
+    private List<String> imageUrls;
+    private String category;
 }
