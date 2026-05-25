@@ -72,6 +72,7 @@ public class WishlistServiceImpl implements WishlistService {
                 .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
                 .sellerName(p.getSeller().getName())
                 .savedAt(saved.getSavedAt())
+                .imageUrls(p.getImageUrls())
                 .build();
     }
 }

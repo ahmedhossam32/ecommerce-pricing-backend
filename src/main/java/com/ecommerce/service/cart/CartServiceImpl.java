@@ -82,6 +82,7 @@ public class CartServiceImpl implements CartService {
                 .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
                 .sellerName(p.getSeller().getName())
                 .addedAt(item.getAddedAt())
+                .imageUrls(p.getImageUrls())
                 .build();
     }
 }
