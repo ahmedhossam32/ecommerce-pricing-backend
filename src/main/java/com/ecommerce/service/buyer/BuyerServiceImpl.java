@@ -11,6 +11,7 @@ import com.ecommerce.entity.User;
 import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.exception.ResourceNotFoundException;
 import com.ecommerce.repository.OrderRepository;
+import org.springframework.security.access.AccessDeniedException;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -143,6 +144,36 @@ public class BuyerServiceImpl implements BuyerService {
                         )
                         .build())
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderById(Long orderId, User buyer) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getBuyer().getId().equals(buyer.getId())) {
+            throw new AccessDeniedException("You are not authorized to view this order");
+        }
+
+        return OrderResponse.builder()
+                .orderId(order.getId())
+                .productId(order.getProduct().getId())
+                .productName(order.getProduct().getName())
+                .price(order.getPriceAtPurchase().doubleValue())
+                .buyerName(order.getBuyer().getName())
+                .sellerName(order.getProduct().getSeller().getName())
+                .createdAt(order.getCreatedAt())
+                .message("Order placed successfully!")
+                .imageUrls(order.getProduct().getImageUrls())
+                .category(order.getProduct().getCategory())
+                .brand(order.getProduct().getBrand())
+                .sellerProfilePictureUrl(
+                    order.getProduct().getSeller().getProfilePictureUrl() != null
+                        ? order.getProduct().getSeller().getProfilePictureUrl()
+                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
+                )
+                .build();
     }
 
     private BuyerProductResponse toSummaryResponse(Product p) {

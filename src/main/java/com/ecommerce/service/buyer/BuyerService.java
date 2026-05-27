@@ -14,4 +14,5 @@ public interface BuyerService {
     List<PriceHistoryResponse> getProductHistory(Long productId);
     OrderResponse placeOrder(OrderRequest request, User buyer);
     List<OrderResponse> getMyOrders(User buyer);
+    OrderResponse getOrderById(Long orderId, User buyer);
 }

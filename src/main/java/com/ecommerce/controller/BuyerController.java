@@ -50,4 +50,12 @@ public class BuyerController {
             @AuthenticationPrincipal User buyer) {
         return ResponseEntity.ok(buyerService.getMyOrders(buyer));
     }
+
+    @GetMapping("/api/orders/{orderId}")
+    @PreAuthorize("hasRole('BUYER')")
+    public ResponseEntity<OrderResponse> getOrderById(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal User buyer) {
+        return ResponseEntity.ok(buyerService.getOrderById(orderId, buyer));
+    }
 }
