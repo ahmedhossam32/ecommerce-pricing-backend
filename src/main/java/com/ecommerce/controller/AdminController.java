@@ -3,6 +3,7 @@ package com.ecommerce.controller;
 import com.ecommerce.dto.request.ApproveRequest;
 import com.ecommerce.dto.request.OverrideRequest;
 import com.ecommerce.dto.request.RejectRequest;
+import com.ecommerce.dto.response.AdminProductResponse;
 import com.ecommerce.dto.response.AdminRequestResponse;
 import com.ecommerce.dto.response.AdminStatsResponse;
 import com.ecommerce.service.admin.AdminService;
@@ -56,6 +57,13 @@ public class AdminController {
             @PathVariable Long productId,
             @Valid @RequestBody OverrideRequest request) {
         return ResponseEntity.ok(adminService.overridePrice(productId, request));
+    }
+
+    @GetMapping("/products")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminProductResponse>> getAllProducts(
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(adminService.getAllProducts(status));
     }
 
     @GetMapping("/stats")

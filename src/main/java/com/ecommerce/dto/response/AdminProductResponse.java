@@ -12,23 +12,17 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminRequestResponse {
-    private Long requestId;
+public class AdminProductResponse {
     private Long productId;
     private String productName;
     private String category;
     private String brand;
+    private String status;
+    private Double price;
+    private Double suggestedPrice;
     private String sellerName;
     private String sellerEmail;
-    private Double suggestedPrice;
-    private Double sellerPrice;
-    private String sellerReasoning;
-    private Double marketPriceMin;
-    private Double marketPriceMax;
-    private String llmConfidence;
-    private Double mlBaselinePrice;
-    private LocalDateTime createdAt;
-    private String requestType;
-    private List<String> imageUrls;
     private String sellerProfilePictureUrl;
+    private LocalDateTime createdAt;
+    private List<String> imageUrls;
 }

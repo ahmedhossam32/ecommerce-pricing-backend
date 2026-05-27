@@ -16,4 +16,6 @@ public class AdminStatsResponse {
     private long rejectedProducts;
     private long totalSellers;
     private long totalApprovedDecisions;
+    private long totalBuyers;
+    private long totalOrders;
 }

@@ -3,6 +3,7 @@ package com.ecommerce.service.admin;
 import com.ecommerce.dto.request.ApproveRequest;
 import com.ecommerce.dto.request.OverrideRequest;
 import com.ecommerce.dto.request.RejectRequest;
+import com.ecommerce.dto.response.AdminProductResponse;
 import com.ecommerce.dto.response.AdminRequestResponse;
 import com.ecommerce.dto.response.AdminStatsResponse;
 import com.ecommerce.entity.ApprovedDecision;
@@ -14,6 +15,7 @@ import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.enums.Role;
 import com.ecommerce.exception.ResourceNotFoundException;
 import com.ecommerce.repository.ApprovedDecisionRepository;
+import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
@@ -34,6 +36,7 @@ public class AdminServiceImpl implements AdminService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final ApprovedDecisionRepository approvedDecisionRepository;
+    private final OrderRepository orderRepository;
     private final RoutingService routingService;
     private final EmailService emailService;
 
@@ -84,6 +87,18 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<AdminProductResponse> getAllProducts(String status) {
+        List<Product> products = (status != null && !status.isBlank())
+                ? productRepository.findByStatusOrderByCreatedAtDesc(ProductStatus.valueOf(status.toUpperCase()))
+                : productRepository.findAllByOrderByCreatedAtDesc();
+
+        return products.stream()
+                .map(this::toAdminProductResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AdminStatsResponse getStats() {
         return AdminStatsResponse.builder()
                 .totalProducts(productRepository.count())
@@ -92,6 +107,8 @@ public class AdminServiceImpl implements AdminService {
                 .rejectedProducts(productRepository.countByStatus(ProductStatus.REJECTED))
                 .totalSellers(userRepository.countByRole(Role.SELLER))
                 .totalApprovedDecisions(approvedDecisionRepository.count())
+                .totalBuyers(userRepository.countByRole(Role.BUYER))
+                .totalOrders(orderRepository.count())
                 .build();
     }
 
@@ -187,6 +204,29 @@ public class AdminServiceImpl implements AdminService {
                         "newPrice", String.valueOf(newPrice)));
     }
 
+    private AdminProductResponse toAdminProductResponse(Product product) {
+        User seller = product.getSeller();
+        Double suggestedPrice = pricingRequestRepository
+                .findTopByProductOrderByCreatedAtDesc(product)
+                .map(pr -> pr.getSuggestedPrice() != null ? pr.getSuggestedPrice().doubleValue() : null)
+                .orElse(null);
+
+        return AdminProductResponse.builder()
+                .productId(product.getId())
+                .productName(product.getName())
+                .category(product.getCategory())
+                .brand(product.getBrand())
+                .status(product.getStatus().name())
+                .price(product.getPrice() != null ? product.getPrice().doubleValue() : null)
+                .suggestedPrice(suggestedPrice)
+                .sellerName(seller.getName())
+                .sellerEmail(seller.getEmail())
+                .sellerProfilePictureUrl(seller.getProfilePictureUrl())
+                .createdAt(product.getCreatedAt())
+                .imageUrls(product.getImageUrls() != null ? product.getImageUrls() : List.of())
+                .build();
+    }
+
     private AdminRequestResponse toAdminResponse(PricingRequest pr) {
         Product product = pr.getProduct();
         User seller = product.getSeller();
@@ -207,6 +247,8 @@ public class AdminServiceImpl implements AdminService {
                 .mlBaselinePrice(pr.getMlBaselinePrice() != null ? pr.getMlBaselinePrice().doubleValue() : null)
                 .createdAt(pr.getCreatedAt())
                 .requestType(pr.getSellerReasoning() != null && pr.getSellerPrice() != null ? "DISPUTE" : "NEW_LISTING")
+                .imageUrls(product.getImageUrls())
+                .sellerProfilePictureUrl(seller.getProfilePictureUrl())
                 .build();
     }
 

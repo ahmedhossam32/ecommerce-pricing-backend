@@ -15,6 +15,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdAndSeller(Long id, User seller);
     long countByStatus(ProductStatus status);
     List<Product> findByStatus(ProductStatus status);
+    List<Product> findAllByOrderByCreatedAtDesc();
+    List<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status);
 
     @Query("SELECT COALESCE(SUM(o.priceAtPurchase), 0) FROM Order o WHERE o.product.seller = :seller")
     Double calculateRevenueForSeller(@Param("seller") User seller);
