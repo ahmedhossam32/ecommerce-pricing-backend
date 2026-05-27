@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -206,12 +207,20 @@ public class AdminServiceImpl implements AdminService {
 
     private AdminProductResponse toAdminProductResponse(Product product) {
         User seller = product.getSeller();
-        Double suggestedPrice = pricingRequestRepository
-                .findTopByProductOrderByCreatedAtDesc(product)
+
+        Optional<PricingRequest> latestPr = pricingRequestRepository
+                .findTopByProductOrderByCreatedAtDesc(product);
+
+        Double suggestedPrice = latestPr
                 .map(pr -> pr.getSuggestedPrice() != null ? pr.getSuggestedPrice().doubleValue() : null)
                 .orElse(null);
 
+        Long requestId = latestPr
+                .map(pr -> pr.getStatus() == PricingRequestStatus.PENDING ? pr.getId() : null)
+                .orElse(null);
+
         return AdminProductResponse.builder()
+                .requestId(requestId)
                 .productId(product.getId())
                 .productName(product.getName())
                 .category(product.getCategory())

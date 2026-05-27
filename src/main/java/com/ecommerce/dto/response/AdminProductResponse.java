@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminProductResponse {
+    private Long requestId;
     private Long productId;
     private String productName;
     private String category;
