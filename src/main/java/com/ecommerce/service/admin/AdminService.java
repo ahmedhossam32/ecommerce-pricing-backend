@@ -11,6 +11,7 @@ import java.util.Map;
 
 public interface AdminService {
     List<AdminRequestResponse> getPendingRequests();
+    AdminRequestResponse getRequestById(Long requestId);
     Map<String, String> approveRequest(Long requestId, ApproveRequest request);
     Map<String, String> rejectRequest(Long requestId, RejectRequest request);
     Map<String, String> overridePrice(Long productId, OverrideRequest request);

@@ -28,6 +28,12 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getPendingRequests());
     }
 
+    @GetMapping("/requests/{requestId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminRequestResponse> getRequestById(@PathVariable Long requestId) {
+        return ResponseEntity.ok(adminService.getRequestById(requestId));
+    }
+
     @PostMapping("/approve/{requestId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> approveRequest(

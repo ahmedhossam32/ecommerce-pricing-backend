@@ -76,6 +76,14 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
+    public AdminRequestResponse getRequestById(Long requestId) {
+        PricingRequest pr = pricingRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
+        return toAdminResponse(pr);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AdminStatsResponse getStats() {
         return AdminStatsResponse.builder()
                 .totalProducts(productRepository.count())

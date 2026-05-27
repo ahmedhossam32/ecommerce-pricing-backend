@@ -5,7 +5,10 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -Directory)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -Recurse -Filter \"*admin*\" -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -Recurse -Filter \"*.java\")"
     ]
   }
 }
