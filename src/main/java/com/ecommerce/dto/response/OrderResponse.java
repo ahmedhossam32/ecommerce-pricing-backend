@@ -23,4 +23,6 @@ public class OrderResponse {
     private String message;
     private List<String> imageUrls;
     private String category;
+    private String brand;
+    private String sellerProfilePictureUrl;
 }

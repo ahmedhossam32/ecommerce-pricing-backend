@@ -110,6 +110,12 @@ public class BuyerServiceImpl implements BuyerService {
                 .message("Order placed successfully!")
                 .imageUrls(product.getImageUrls())
                 .category(product.getCategory())
+                .brand(product.getBrand())
+                .sellerProfilePictureUrl(
+                    product.getSeller().getProfilePictureUrl() != null
+                        ? product.getSeller().getProfilePictureUrl()
+                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
+                )
                 .build();
     }
 
@@ -129,6 +135,12 @@ public class BuyerServiceImpl implements BuyerService {
                         .message("Order placed successfully!")
                         .imageUrls(o.getProduct().getImageUrls())
                         .category(o.getProduct().getCategory())
+                        .brand(o.getProduct().getBrand())
+                        .sellerProfilePictureUrl(
+                            o.getProduct().getSeller().getProfilePictureUrl() != null
+                                ? o.getProduct().getSeller().getProfilePictureUrl()
+                                : "https://res.cloudinary.com/demo/image/upload/avatar.png"
+                        )
                         .build())
                 .toList();
     }
