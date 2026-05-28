@@ -16,4 +16,5 @@ public class SellerDashboardResponse {
     private long rejected;
     private long draft;
     private Double totalRevenue;
+    private long totalOrders;
 }

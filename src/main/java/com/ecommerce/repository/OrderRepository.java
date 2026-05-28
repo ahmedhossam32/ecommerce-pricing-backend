@@ -14,4 +14,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(SUM(o.priceAtPurchase), 0) FROM Order o WHERE o.product.seller = :seller")
     Double calculateRevenueForSeller(@Param("seller") User seller);
+
+    long countByProductSeller(User seller);
 }

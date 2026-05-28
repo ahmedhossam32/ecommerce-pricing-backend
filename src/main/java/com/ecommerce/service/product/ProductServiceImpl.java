@@ -214,6 +214,7 @@ public class ProductServiceImpl implements ProductService {
                 .rejected(products.stream().filter(p -> p.getStatus() == ProductStatus.REJECTED).count())
                 .draft(products.stream().filter(p -> p.getStatus() == ProductStatus.DRAFT).count())
                 .totalRevenue(revenue != null ? revenue : 0.0)
+                .totalOrders(orderRepository.countByProductSeller(seller))
                 .build();
     }
 
