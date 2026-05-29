@@ -19,11 +19,14 @@ import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.service.pricing.PricingService;
 import com.ecommerce.service.pricing.RoutingService;
+import com.ecommerce.service.upload.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
     private final PricingService pricingService;
     private final RoutingService routingService;
     private final OrderRepository orderRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     @Transactional
@@ -233,6 +237,24 @@ public class ProductServiceImpl implements ProductService {
                 .createdAt(p.getCreatedAt())
                 .imageUrls(p.getImageUrls())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public List<String> uploadProductImages(Long productId, List<MultipartFile> files, User seller) {
+        Product product = productRepository.findByIdAndSeller(productId, seller)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        List<String> urls = new ArrayList<>();
+        for (int i = 0; i < files.size(); i++) {
+            urls.add(cloudinaryService.uploadProductImage(files.get(i), product.getId(), i));
+        }
+
+        product.setImageUrls(urls);
+        product.setPhotosQty(urls.size());
+        productRepository.save(product);
+
+        return urls;
     }
 
     private double round(double v) {

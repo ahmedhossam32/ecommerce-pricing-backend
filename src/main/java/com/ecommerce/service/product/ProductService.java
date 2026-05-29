@@ -9,6 +9,7 @@ import com.ecommerce.dto.response.ProductResponse;
 import com.ecommerce.dto.response.PricingSuggestionResponse;
 import com.ecommerce.dto.response.SellerDashboardResponse;
 import com.ecommerce.entity.User;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,4 +20,5 @@ public interface ProductService {
     List<ProductResponse> getSellerProducts(User seller);
     ProductResponse getProductById(Long productId, User seller);
     SellerDashboardResponse getDashboard(User seller);
+    List<String> uploadProductImages(Long productId, List<MultipartFile> files, User seller);
 }

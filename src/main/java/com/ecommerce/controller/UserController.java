@@ -1,8 +1,7 @@
 package com.ecommerce.controller;
 
 import com.ecommerce.entity.User;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.service.upload.CloudinaryService;
+import com.ecommerce.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final CloudinaryService cloudinaryService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @PostMapping(value = "/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
@@ -25,9 +23,6 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user) {
 
-        String url = cloudinaryService.uploadProfilePicture(file, user.getId());
-        user.setProfilePictureUrl(url);
-        userRepository.save(user);
-        return ResponseEntity.ok(url);
+        return ResponseEntity.ok(userService.uploadProfilePicture(file, user));
     }
 }

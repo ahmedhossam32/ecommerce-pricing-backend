@@ -8,7 +8,9 @@
       "Bash(Select-Object Name)",
       "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -Recurse -Filter \"*admin*\" -File)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -Recurse -Filter \"*.java\")"
+      "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -Recurse -Filter \"*.java\")",
+      "Bash(Get-ChildItem -Path \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\\\\src\\\\main\\\\java\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)"
     ]
   }
 }

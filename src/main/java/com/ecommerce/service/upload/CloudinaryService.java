@@ -18,13 +18,12 @@ public class CloudinaryService {
     public String uploadProfilePicture(MultipartFile file, Long userId) {
         try {
             Map result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                "folder", "profile_pictures",
-                "public_id", "user_" + userId,
-                "overwrite", true,
-                "resource_type", "image",
-                "transformation", ObjectUtils.asMap(
-                    "width", 300, "height", 300, "crop", "fill", "gravity", "face"
-                )
+                    "folder", "profile_pictures",
+                    "public_id", "user_" + userId,
+                    "overwrite", true,
+                    "resource_type", "image",
+                    "transformation", new com.cloudinary.Transformation()
+                            .width(300).height(300).crop("fill").gravity("face")
             ));
             return result.get("secure_url").toString();
         } catch (IOException e) {
