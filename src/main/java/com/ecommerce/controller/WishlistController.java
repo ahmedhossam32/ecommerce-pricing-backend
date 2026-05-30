@@ -39,4 +39,11 @@ public class WishlistController {
         wishlistService.unsaveProduct(productId, buyer);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> clearWishlist(
+            @AuthenticationPrincipal User buyer) {
+        wishlistService.clearWishlist(buyer);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -9,4 +9,5 @@ public interface WishlistService {
     SavedProductResponse saveProduct(Long productId, User buyer);
     List<SavedProductResponse> getSaved(User buyer);
     void unsaveProduct(Long productId, User buyer);
+    void clearWishlist(User buyer);
 }

@@ -21,6 +21,12 @@ public class ProductResponse {
     private String status;
     private Double price;
     private Double suggestedPrice;
+    private Double minRange;
+    private Double maxRange;
+    private String confidence;
+    private Double mlBaselinePrice;
+    private Double marketPriceMin;
+    private Double marketPriceMax;
     private String sellerName;
     private Double weight;
     private LocalDateTime createdAt;

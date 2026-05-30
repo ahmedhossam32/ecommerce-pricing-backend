@@ -34,7 +34,6 @@ public class BuyerServiceImpl implements BuyerService {
     public List<BuyerProductResponse> getAllLiveProducts() {
         return productRepository.findByStatus(ProductStatus.LIVE)
                 .stream()
-                .filter(p -> p.getImageUrls() != null && !p.getImageUrls().isEmpty())
                 .map(this::toSummaryResponse)
                 .toList();
     }
@@ -45,9 +44,6 @@ public class BuyerServiceImpl implements BuyerService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         if (product.getStatus() != ProductStatus.LIVE) {
-            throw new ResourceNotFoundException("Product not found");
-        }
-        if (product.getImageUrls() == null || product.getImageUrls().isEmpty()) {
             throw new ResourceNotFoundException("Product not found");
         }
         return toDetailResponse(product);

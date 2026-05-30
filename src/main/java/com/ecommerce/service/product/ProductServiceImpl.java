@@ -198,13 +198,38 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByIdAndSeller(productId, seller)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        Double suggestedPrice = pricingRequestRepository
-                .findTopByProductOrderByCreatedAtDesc(product)
-                .map(pr -> pr.getSuggestedPrice().doubleValue())
-                .orElse(null);
+        var latest = pricingRequestRepository.findTopByProductOrderByCreatedAtDesc(product);
 
-        return toResponse(product, suggestedPrice);
+        Double suggestedPrice = latest.map(pr -> pr.getSuggestedPrice() != null ? pr.getSuggestedPrice().doubleValue() : null).orElse(null);
+        Double minRange = suggestedPrice != null ? Math.round(suggestedPrice * 0.85 * 100.0) / 100.0 : null;
+        Double maxRange = suggestedPrice != null ? Math.round(suggestedPrice * 1.15 * 100.0) / 100.0 : null;
+        String confidence = latest.map(pr -> pr.getLlmConfidence()).orElse(null);
+        Double mlBaselinePrice = latest.map(pr -> pr.getMlBaselinePrice() != null ? pr.getMlBaselinePrice().doubleValue() : null).orElse(null);
+        Double marketPriceMin = latest.map(pr -> pr.getMarketPriceMin() != null ? pr.getMarketPriceMin().doubleValue() : null).orElse(null);
+        Double marketPriceMax = latest.map(pr -> pr.getMarketPriceMax() != null ? pr.getMarketPriceMax().doubleValue() : null).orElse(null);
+
+        return ProductResponse.builder()
+                .productId(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .category(product.getCategory())
+                .brand(product.getBrand())
+                .status(product.getStatus().name())
+                .price(product.getPrice() != null ? product.getPrice().doubleValue() : null)
+                .suggestedPrice(suggestedPrice)
+                .minRange(minRange)
+                .maxRange(maxRange)
+                .confidence(confidence)
+                .mlBaselinePrice(mlBaselinePrice)
+                .marketPriceMin(marketPriceMin)
+                .marketPriceMax(marketPriceMax)
+                .sellerName(product.getSeller().getName())
+                .weight(product.getWeight())
+                .createdAt(product.getCreatedAt())
+                .imageUrls(product.getImageUrls() != null ? product.getImageUrls() : List.<String>of())
+                .build();
     }
+
 
     @Override
     @Transactional(readOnly = true)

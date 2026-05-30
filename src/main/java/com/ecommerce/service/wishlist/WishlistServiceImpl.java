@@ -61,6 +61,12 @@ public class WishlistServiceImpl implements WishlistService {
         savedProductRepository.deleteByBuyerAndProduct(buyer, product);
     }
 
+    @Override
+    @Transactional
+    public void clearWishlist(User buyer) {
+        savedProductRepository.deleteByBuyer(buyer);
+    }
+
     private SavedProductResponse toResponse(SavedProduct saved) {
         Product p = saved.getProduct();
         return SavedProductResponse.builder()
