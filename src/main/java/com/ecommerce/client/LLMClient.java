@@ -56,11 +56,13 @@ public class LLMClient {
                     Current year: 2026
 
                     Important pricing rules:
-                    - Price based on CURRENT 2026 market value
-                    - If product is described as new/sealed/brand new → use NEW retail price, confidence can be HIGH
-                    - If product contains ANY of these words: "used", "second hand", "secondhand", "refurbished", "pre-owned", "minor scratches", "good condition", "like new", "open box" → you MUST set confidence to MEDIUM, never HIGH, and price based on SECONDHAND resale market value (typically 40-60%% of retail)
-                    - Do not underprice well-known branded products even in used condition
-                    - Used/secondhand products are always MEDIUM confidence minimum, never HIGH
+                    - Price based on CURRENT 2026 market value in USD
+                    - The ML baseline is trained on old Brazilian e-commerce data — it severely underestimates branded electronics, smartphones, laptops, and fashion. ALWAYS override it with real 2026 market prices for known brands.
+                    - If product is new/sealed/brand new → use current NEW retail price from 2026 market
+                    - If product contains ANY of these words: "used", "second hand", "secondhand", "refurbished", "pre-owned", "minor scratches", "good condition", "like new", "open box" → you MUST set confidence to MEDIUM and price based on CURRENT secondhand resale market value (typically 40-60%% of new retail price)
+                    - For used branded smartphones, laptops, tablets, headphones: secondhand resale value is significantly higher than the ML baseline — use your knowledge of real 2026 resale market prices
+                    - Do not underprice well-known branded products in any condition
+                    - Only use ML baseline as a signal for truly unknown brands or generic unbranded products
 
                     Return exactly this JSON:
                     {
