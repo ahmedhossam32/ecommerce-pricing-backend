@@ -57,9 +57,10 @@ public class LLMClient {
 
                     Important pricing rules:
                     - Price based on CURRENT 2026 market value
-                    - If product is described as new/sealed/brand new → use NEW retail price
-                    - If product is described as used/refurbished/condition → use SECONDHAND resale price
-                    - Do not underprice well-known branded products
+                    - If product is described as new/sealed/brand new → use NEW retail price, confidence can be HIGH
+                    - If product contains ANY of these words: "used", "second hand", "secondhand", "refurbished", "pre-owned", "minor scratches", "good condition", "like new", "open box" → you MUST set confidence to MEDIUM, never HIGH, and price based on SECONDHAND resale market value (typically 40-60%% of retail)
+                    - Do not underprice well-known branded products even in used condition
+                    - Used/secondhand products are always MEDIUM confidence minimum, never HIGH
 
                     Return exactly this JSON:
                     {
@@ -71,8 +72,8 @@ public class LLMClient {
                     }
 
                     Confidence rules:
-                    HIGH = well known brand, clear product name, established market price
-                    MEDIUM = known brand but unclear specs, used condition, or announced but unreleased product
+                    HIGH = well known brand, clear product name, established market price, AND product is new/sealed
+                    MEDIUM = known brand but unclear specs, OR used/secondhand/refurbished condition, OR announced but unreleased product
                     LOW = unknown brand, vague description, handmade item, unique or one-of-a-kind product
                     """.formatted(description, mlBaseline);
 

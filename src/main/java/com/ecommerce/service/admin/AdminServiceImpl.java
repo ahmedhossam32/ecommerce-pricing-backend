@@ -124,8 +124,8 @@ public class AdminServiceImpl implements AdminService {
         }
         User seller = product.getSeller();
         double approvedPrice = request.getApprovedPrice();
-        double approvedMin = round(approvedPrice * 0.85);
-        double approvedMax = round(approvedPrice * 1.15);
+        double approvedMin = round(approvedPrice * 0.90);
+        double approvedMax = round(approvedPrice * 1.10);
         String brand = pr.getBrand() != null ? pr.getBrand() : "UNKNOWN";
 
         product.setPrice(BigDecimal.valueOf(approvedPrice));
@@ -162,8 +162,8 @@ public class AdminServiceImpl implements AdminService {
         User seller = product.getSeller();
 
         double suggested = pr.getSuggestedPrice().doubleValue();
-        double minRange = round(suggested * 0.85);
-        double maxRange = round(suggested * 1.15);
+        double minRange = round(suggested * 0.90);
+        double maxRange = round(suggested * 1.10);
 
         product.setStatus(ProductStatus.REJECTED);
         productRepository.save(product);

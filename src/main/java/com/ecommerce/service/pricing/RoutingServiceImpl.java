@@ -67,8 +67,8 @@ public class RoutingServiceImpl implements RoutingService {
     @Override
     public void cacheApprovedRange(String brand, String category, double approvedPrice) {
         String key = cacheKey(brand, category, approvedPrice);
-        double min = Math.round(approvedPrice * 0.85 * 100.0) / 100.0;
-        double max = Math.round(approvedPrice * 1.15 * 100.0) / 100.0;
+        double min = Math.round(approvedPrice * 0.90 * 100.0) / 100.0;
+        double max = Math.round(approvedPrice * 1.10 * 100.0) / 100.0;
         redisTemplate.opsForValue().set(key, min + ":" + max, 30, TimeUnit.DAYS);
     }
 

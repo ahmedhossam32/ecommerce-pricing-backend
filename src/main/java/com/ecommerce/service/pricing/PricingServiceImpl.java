@@ -56,8 +56,8 @@ public class PricingServiceImpl implements PricingService {
 
         // 6. Combine ML + LLM into suggested price
         double suggested = computeSuggestedPrice(pricing, mlBaseline);
-        double minRange  = round(suggested * 0.85);
-        double maxRange  = round(suggested * 1.15);
+        double minRange  = round(suggested * 0.90);
+        double maxRange  = round(suggested * 1.10);
         suggested        = round(suggested);
 
         // 7. Route: cache → bounds → confidence
