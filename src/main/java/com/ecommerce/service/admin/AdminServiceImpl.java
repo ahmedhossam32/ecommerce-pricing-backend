@@ -14,7 +14,9 @@ import com.ecommerce.enums.PricingRequestStatus;
 import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.enums.Role;
 import com.ecommerce.exception.ResourceNotFoundException;
+import com.ecommerce.entity.CategoryBounds;
 import com.ecommerce.repository.ApprovedDecisionRepository;
+import com.ecommerce.repository.CategoryBoundsRepository;
 import com.ecommerce.repository.OrderRepository;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
@@ -40,6 +42,7 @@ public class AdminServiceImpl implements AdminService {
     private final OrderRepository orderRepository;
     private final RoutingService routingService;
     private final EmailService emailService;
+    private final CategoryBoundsRepository categoryBoundsRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -239,6 +242,18 @@ public class AdminServiceImpl implements AdminService {
     private AdminRequestResponse toAdminResponse(PricingRequest pr) {
         Product product = pr.getProduct();
         User seller = product.getSeller();
+
+        String routingReason = "LOW_CONFIDENCE";
+        Optional<CategoryBounds> bounds = categoryBoundsRepository.findByCategory(product.getCategory());
+        if (bounds.isPresent()) {
+            BigDecimal suggested = pr.getSuggestedPrice();
+            if (suggested != null &&
+                (suggested.compareTo(bounds.get().getMinPrice()) < 0 ||
+                 suggested.compareTo(bounds.get().getMaxPrice()) > 0)) {
+                routingReason = "OUTSIDE_BOUNDS";
+            }
+        }
+
         return AdminRequestResponse.builder()
                 .requestId(pr.getId())
                 .productId(product.getId())
@@ -256,6 +271,7 @@ public class AdminServiceImpl implements AdminService {
                 .mlBaselinePrice(pr.getMlBaselinePrice() != null ? pr.getMlBaselinePrice().doubleValue() : null)
                 .createdAt(pr.getCreatedAt())
                 .requestType(pr.getSellerReasoning() != null && pr.getSellerPrice() != null ? "DISPUTE" : "NEW_LISTING")
+                .routingReason(routingReason)
                 .imageUrls(product.getImageUrls())
                 .sellerProfilePictureUrl(seller.getProfilePictureUrl())
                 .build();

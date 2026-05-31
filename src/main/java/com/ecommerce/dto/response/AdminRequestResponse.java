@@ -29,6 +29,7 @@ public class AdminRequestResponse {
     private Double mlBaselinePrice;
     private LocalDateTime createdAt;
     private String requestType;
+    private String routingReason;
     private List<String> imageUrls;
     private String sellerProfilePictureUrl;
 }
