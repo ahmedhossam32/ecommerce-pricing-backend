@@ -11,6 +11,7 @@ import com.ecommerce.entity.User;
 import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.exception.ResourceNotFoundException;
 import com.ecommerce.repository.OrderRepository;
+import com.ecommerce.service.admin.EmailService;
 import org.springframework.security.access.AccessDeniedException;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
@@ -28,6 +29,7 @@ public class BuyerServiceImpl implements BuyerService {
     private final ProductRepository productRepository;
     private final PricingRequestRepository pricingRequestRepository;
     private final OrderRepository orderRepository;
+    private final EmailService emailService;
 
     @Override
     @Transactional(readOnly = true)
@@ -95,6 +97,13 @@ public class BuyerServiceImpl implements BuyerService {
                 .priceAtPurchase(product.getPrice())
                 .build();
         orderRepository.save(order);
+
+        emailService.sendOrderConfirmationEmail(
+                buyer.getEmail(),
+                buyer.getName(),
+                product.getName(),
+                order.getPriceAtPurchase().doubleValue()
+        );
 
         return OrderResponse.builder()
                 .orderId(order.getId())
