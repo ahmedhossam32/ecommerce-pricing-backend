@@ -30,6 +30,9 @@ public class AdminRequestResponse {
     private LocalDateTime createdAt;
     private String requestType;
     private String routingReason;
+    private String condition;
+    private String conditionNotes;
+    private String reasoning;
     private List<String> imageUrls;
     private String sellerProfilePictureUrl;
 }

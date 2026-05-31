@@ -22,4 +22,7 @@ public class PricingSuggestionResponse {
     private Double mlBaselinePrice;
     private Double marketPriceMin;
     private Double marketPriceMax;
+    private String condition;
+    private String conditionNotes;
+    private String reasoning;
 }

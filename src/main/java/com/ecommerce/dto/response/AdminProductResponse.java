@@ -18,6 +18,7 @@ public class AdminProductResponse {
     private String productName;
     private String category;
     private String brand;
+    private String condition;
     private String status;
     private Double price;
     private Double suggestedPrice;

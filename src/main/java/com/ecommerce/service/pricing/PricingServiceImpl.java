@@ -46,8 +46,27 @@ public class PricingServiceImpl implements PricingService {
         log.info("=== ML BASELINE: {} ===", mlBaseline);
         log.debug("=== CATEGORY: {} ===", request.getCategory());
 
-        // 5. LLM Call 2: market price + confidence + multiplier (runs after ML)
-        LLMResponse pricing = llmService.analyzePricing(request.getDescription(), mlBaseline);
+        // 5. Resolve condition: seller ground truth takes priority over LLM guess
+        String condition = (request.getCondition() != null && !request.getCondition().isBlank())
+                ? request.getCondition()
+                : (extraction.getCondition() != null ? extraction.getCondition() : "UNKNOWN");
+
+        String conditionNotes = request.getConditionNotes() != null
+                ? request.getConditionNotes() : "";
+
+        log.debug("=== CONDITION SOURCE: {} ===",
+                (request.getCondition() != null && !request.getCondition().isBlank()) ? "SELLER" : "LLM");
+        log.debug("=== CONDITION: {} ===", condition);
+
+        // 5. LLM Call 2: market price + confidence (runs after ML)
+        LLMResponse pricing = llmService.analyzePricing(
+                request.getDescription(),
+                extraction.getBrand(),
+                condition,
+                conditionNotes,
+                extraction.getProductType(),
+                extraction.getModelIdentifier(),
+                mlBaseline);
 
         log.info("=== LLM CONFIDENCE: {} ===", pricing.getConfidence());
         log.info("=== LLM PRICE RANGE: {} - {} ===", pricing.getMarketPriceMin(), pricing.getMarketPriceMax());
@@ -75,6 +94,9 @@ public class PricingServiceImpl implements PricingService {
                 .mlBaselinePrice(mlBaseline)
                 .marketPriceMin(pricing.getMarketPriceMin())
                 .marketPriceMax(pricing.getMarketPriceMax())
+                .condition(condition)
+                .conditionNotes(conditionNotes)
+                .reasoning(pricing.getReasoning())
                 .build();
     }
 

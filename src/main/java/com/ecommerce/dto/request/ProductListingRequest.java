@@ -32,4 +32,7 @@ public class ProductListingRequest {
     @NotNull
     @Min(1)
     private Integer photosQty;
+
+    private String condition;
+    private String conditionNotes;
 }

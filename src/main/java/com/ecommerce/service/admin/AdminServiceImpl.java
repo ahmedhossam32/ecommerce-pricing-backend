@@ -228,6 +228,7 @@ public class AdminServiceImpl implements AdminService {
                 .productName(product.getName())
                 .category(product.getCategory())
                 .brand(product.getBrand())
+                .condition(latestPr.map(pr -> pr.getCondition()).orElse(null))
                 .status(product.getStatus().name())
                 .price(product.getPrice() != null ? product.getPrice().doubleValue() : null)
                 .suggestedPrice(suggestedPrice)
@@ -272,6 +273,9 @@ public class AdminServiceImpl implements AdminService {
                 .createdAt(pr.getCreatedAt())
                 .requestType(pr.getSellerReasoning() != null && pr.getSellerPrice() != null ? "DISPUTE" : "NEW_LISTING")
                 .routingReason(routingReason)
+                .condition(pr.getCondition())
+                .conditionNotes(pr.getConditionNotes())
+                .reasoning(pr.getReasoning())
                 .imageUrls(product.getImageUrls())
                 .sellerProfilePictureUrl(seller.getProfilePictureUrl())
                 .build();

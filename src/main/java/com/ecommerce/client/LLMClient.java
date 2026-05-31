@@ -10,25 +10,41 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LLMClient {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LLMClient.class);
+
     private final ChatClient chatClient;
     private final ObjectMapper objectMapper;
 
     public LLMResponse extractProductInfo(String description) {
         try {
             String prompt = """
-                    You are a product information extractor.
-                    Extract the brand name from this product description and return ONLY valid JSON. No explanation, no markdown, no code blocks.
+                    You are a product information extractor for an e-commerce platform.
+                    Extract structured facts from this product description.
+                    Return ONLY valid JSON, no markdown, no explanation.
 
                     Product description: "%s"
 
                     Rules:
-                    - brand: Extract the most prominent brand name (e.g. "Apple", "Samsung", "Nike"). If multiple brands appear, pick the first/primary one. NEVER return null — use "UNKNOWN" if no brand found.
-                    - estimatedWeight: weight in grams as a number. Estimate based on product type if not mentioned. Return null only if truly impossible to estimate.
+                    - brand: The most prominent brand name. Use "UNKNOWN" if none found. Never null.
+                    - condition: Classify as exactly one of:
+                        "NEW"         → described as new, sealed, brand new, unopened, never used
+                        "USED"        → described as used, second hand, secondhand, pre-owned,
+                                        previously owned, gently used, worn, minor scratches,
+                                        good condition, fair condition, like new, open box
+                        "REFURBISHED" → described as refurbished, restored, reconditioned, certified pre-owned
+                        "UNKNOWN"     → no condition mentioned (assume new retail listing)
+                    - productType: What the product actually is, not the brand.
+                      Examples: "smartphone", "laptop", "running shoes", "mechanical keyboard",
+                      "handbag", "smartwatch", "wireless headphones", "gaming mouse"
+                    - modelIdentifier: Specific model if mentioned. Examples: "iPhone 17 Pro Max 256GB",
+                      "Galaxy S25 Ultra", "WH-1000XM6". Use null if no specific model mentioned.
 
-                    Return exactly this JSON format (use real values, not placeholders):
+                    Return exactly this JSON:
                     {
                       "brand": "Apple",
-                      "estimatedWeight": 174
+                      "condition": "NEW",
+                      "productType": "smartphone",
+                      "modelIdentifier": "iPhone 17 Pro Max 256GB"
                     }
                     """.formatted(description);
 
@@ -39,49 +55,77 @@ public class LLMClient {
             }
             return response;
         } catch (Exception e) {
+            log.error("=== LLM CALL 1 FAILED: {} ===", e.getMessage(), e);
             return LLMResponse.builder()
                     .brand("UNKNOWN")
                     .build();
         }
     }
 
-    public LLMResponse analyzePricing(String description, double mlBaseline) {
+    public LLMResponse analyzePricing(String description, String brand, String condition, String conditionNotes, String productType, String modelIdentifier, double mlBaseline) {
         try {
+            String modelInfo = (modelIdentifier != null && !modelIdentifier.isBlank())
+                    ? modelIdentifier : productType;
+
             String prompt = """
-                    You are a product pricing assistant for a 2025-2026 e-commerce platform.
-                    Analyze this product and return ONLY raw JSON, no markdown, no explanation.
+                    You are a product pricing expert for a 2026 e-commerce marketplace.
+                    Return ONLY valid JSON, no markdown, no explanation.
 
-                    Product description: "%s"
-                    ML baseline price for this category: $%.2f
-                    Current year: 2026
+                    Product to price:
+                    - Description: "%s"
+                    - Brand: %s
+                    - Product type: %s
+                    - Specific model: %s
+                    - Condition: %s
+                    - Condition notes from seller: %s
+                    - ML physical baseline (Brazilian dataset, ignore for branded products): $%.2f
 
-                    Important pricing rules:
-                    - Price based on CURRENT 2026 market value in USD
-                    - The ML baseline is trained on old Brazilian e-commerce data — it severely underestimates branded electronics, smartphones, laptops, and fashion. ALWAYS override it with real 2026 market prices for known brands.
-                    - If product is new/sealed/brand new → use current NEW retail price from 2026 market
-                    - If product contains ANY of these words: "used", "second hand", "secondhand", "refurbished", "pre-owned", "minor scratches", "good condition", "like new", "open box" → you MUST set confidence to MEDIUM and price based on CURRENT secondhand resale market value (typically 40-60%% of new retail price)
-                    - For used branded smartphones, laptops, tablets, headphones: secondhand resale value is significantly higher than the ML baseline — use your knowledge of real 2026 resale market prices
-                    - Do not underprice well-known branded products in any condition
-                    - Only use ML baseline as a signal for truly unknown brands or generic unbranded products
+                    Pricing instructions:
+                    - Use CURRENT 2026 market prices in USD for all known brands.
+                    - The ML baseline is only reliable for UNKNOWN brands and generic unbranded products.
+                      For any recognized brand, override it completely with real market knowledge.
+                    - Condition pricing is CRITICAL — you MUST apply these discounts
+                      to the marketPriceMin and marketPriceMax values.
+                      Never return new retail prices when condition is USED or REFURBISHED:
+                       - NEW or UNKNOWN condition → use current new retail price, no discount
+                       - USED → marketPriceMin and marketPriceMax must be 40-65%% of the
+                         current new retail price for this exact model.
+                         Use 55-65%% for minor cosmetic damage only.
+                         Use 40-50%% for functional issues or heavy wear.
+                         The conditionNotes provided by the seller must influence
+                         where in this range you land.
+                       - REFURBISHED → marketPriceMin and marketPriceMax must be 55-75%%
+                         of the current new retail price for this exact model.
+                       - This discount applies to ALL brands and ALL product types.
+                         A used product is NEVER priced at new retail value.
+                    - Be model-specific. iPhone 12 and iPhone 17 have very different prices.
+                      A 2019 laptop and a 2024 laptop are not the same price.
+                    - marketPriceMin must always be less than marketPriceMax.
+                    - Range width guide: 10-20%% of midpoint for well-known products,
+                      up to 40%% for vague or generic products.
+
+                    Confidence assignment:
+                    HIGH   → Brand is well-known AND specific model is identifiable AND
+                             condition is NEW or UNKNOWN
+                    MEDIUM → Brand is known BUT condition is USED or REFURBISHED,
+                             OR brand is known but model is vague/unclear,
+                             OR product is announced but not yet widely available
+                    LOW    → Brand is UNKNOWN, OR product is handmade/custom/one-of-a-kind,
+                             OR description is too vague to price reliably
 
                     Return exactly this JSON:
                     {
-                      "marketPriceMin": minimum USD market price as number or null if unknown,
-                      "marketPriceMax": maximum USD market price as number or null if unknown,
-                      "multiplier": marketPriceMidpoint divided by ML baseline rounded to 1 decimal or 1.0 if unknown,
+                      "marketPriceMin": number (USD, never null for HIGH/MEDIUM),
+                      "marketPriceMax": number (USD, never null for HIGH/MEDIUM),
                       "confidence": "HIGH" or "MEDIUM" or "LOW",
-                      "reasoning": "one sentence explaining your confidence level"
+                      "reasoning": "2-3 sentences: what product this is, what drives the price, and why this confidence level"
                     }
-
-                    Confidence rules:
-                    HIGH = well known brand, clear product name, established market price, AND product is new/sealed
-                    MEDIUM = known brand but unclear specs, OR used/secondhand/refurbished condition, OR announced but unreleased product
-                    LOW = unknown brand, vague description, handmade item, unique or one-of-a-kind product
-                    """.formatted(description, mlBaseline);
+                    """.formatted(description, brand, productType, modelInfo, condition, conditionNotes, mlBaseline);
 
             String raw = chatClient.prompt().user(prompt).call().content();
             return objectMapper.readValue(clean(raw), LLMResponse.class);
         } catch (Exception e) {
+            log.error("=== LLM CALL 2 FAILED: {} ===", e.getMessage(), e);
             return LLMResponse.builder()
                     .confidence("LOW")
                     .multiplier(1.0)

@@ -74,6 +74,9 @@ public class ProductServiceImpl implements ProductService {
                         ? BigDecimal.valueOf(suggestion.getMarketPriceMin()) : null)
                 .marketPriceMax(suggestion.getMarketPriceMax() != null
                         ? BigDecimal.valueOf(suggestion.getMarketPriceMax()) : null)
+                .condition(suggestion.getCondition())
+                .conditionNotes(suggestion.getConditionNotes())
+                .reasoning(suggestion.getReasoning())
                 .status(PricingRequestStatus.PENDING)
                 .build();
         pricingRequestRepository.save(pr);
@@ -97,6 +100,9 @@ public class ProductServiceImpl implements ProductService {
                 .mlBaselinePrice(suggestion.getMlBaselinePrice())
                 .marketPriceMin(suggestion.getMarketPriceMin())
                 .marketPriceMax(suggestion.getMarketPriceMax())
+                .condition(suggestion.getCondition())
+                .conditionNotes(suggestion.getConditionNotes())
+                .reasoning(suggestion.getReasoning())
                 .build();
     }
 
@@ -114,8 +120,8 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found"));
 
         double suggested = pr.getSuggestedPrice().doubleValue();
-        double minRange = round(suggested * 0.85);
-        double maxRange = round(suggested * 1.15);
+        double minRange = round(suggested * 0.90);
+        double maxRange = round(suggested * 1.10);
 
         double finalPrice;
         if (request != null && request.getChosenPrice() != null) {

@@ -38,6 +38,15 @@ public class PricingRequest {
     private String brand;
     private String llmConfidence;
 
+    @Column(columnDefinition = "TEXT")
+    private String condition;
+
+    @Column(columnDefinition = "TEXT")
+    private String conditionNotes;
+
+    @Column(columnDefinition = "TEXT")
+    private String reasoning;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal mlBaselinePrice;
 

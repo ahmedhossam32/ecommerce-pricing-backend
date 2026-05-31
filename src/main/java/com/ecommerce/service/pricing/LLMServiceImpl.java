@@ -17,7 +17,7 @@ public class LLMServiceImpl implements LLMService {
     }
 
     @Override
-    public LLMResponse analyzePricing(String description, double mlBaseline) {
-        return llmClient.analyzePricing(description, mlBaseline);
+    public LLMResponse analyzePricing(String description, String brand, String condition, String conditionNotes, String productType, String modelIdentifier, double mlBaseline) {
+        return llmClient.analyzePricing(description, brand, condition, conditionNotes, productType, modelIdentifier, mlBaseline);
     }
 }

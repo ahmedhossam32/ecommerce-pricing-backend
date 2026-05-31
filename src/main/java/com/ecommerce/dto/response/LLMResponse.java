@@ -1,5 +1,6 @@
 package com.ecommerce.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +19,13 @@ public class LLMResponse {
     private Double multiplier;
     private String confidence;
     private String reasoning;
+
+    @JsonProperty("condition")
+    private String condition;
+
+    @JsonProperty("productType")
+    private String productType;
+
+    @JsonProperty("modelIdentifier")
+    private String modelIdentifier;
 }
