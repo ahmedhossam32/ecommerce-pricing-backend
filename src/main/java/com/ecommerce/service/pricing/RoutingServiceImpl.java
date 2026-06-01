@@ -1,6 +1,7 @@
 package com.ecommerce.service.pricing;
 
 import com.ecommerce.entity.CategoryBounds;
+import com.ecommerce.enums.Condition;
 import com.ecommerce.repository.CategoryBoundsRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -25,12 +26,12 @@ public class RoutingServiceImpl implements RoutingService {
 
     @Override
     @Transactional(readOnly = true)
-    public String determineStatus(double price, String brand, String category, String confidence) {
+    public String determineStatus(double price, String brand, String category, String confidence, String condition) {
 
 
 
         // Layer 1 — Redis cache check
-        String cacheKey = cacheKey(brand, category, price);
+        String cacheKey = cacheKey(brand, category, condition, price);
         String cached = redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
             log.info("Cache hit for key: {}", cacheKey);
@@ -65,15 +66,17 @@ public class RoutingServiceImpl implements RoutingService {
         }
     }
     @Override
-    public void cacheApprovedRange(String brand, String category, double approvedPrice) {
-        String key = cacheKey(brand, category, approvedPrice);
+    public void cacheApprovedRange(String brand, String category, double approvedPrice, String condition) {
+        String key = cacheKey(brand, category, condition, approvedPrice);
         double min = Math.round(approvedPrice * 0.90 * 100.0) / 100.0;
         double max = Math.round(approvedPrice * 1.10 * 100.0) / 100.0;
         redisTemplate.opsForValue().set(key, min + ":" + max, 30, TimeUnit.DAYS);
+        log.info("=== CACHE WRITTEN: key={} range={}-{} ===", key, min, max);
     }
 
-    private String cacheKey(String brand, String category, double price) {
-        return PREFIX + brand.toLowerCase() + ":" + category.toLowerCase() + ":" + priceBucket(price);
+    private String cacheKey(String brand, String category, String condition, double price) {
+        return PREFIX + brand.toLowerCase() + ":" + category.toLowerCase() + ":"
+                + Condition.from(condition).name().toLowerCase() + ":" + priceBucket(price);
     }
 
     private String priceBucket(double price) {

@@ -96,7 +96,7 @@ public class PricingServiceImpl implements PricingService {
         suggested        = round(suggested);
 
         // 7. Route: cache → bounds → confidence
-        String status = routingService.determineStatus(suggested, brand, request.getCategory(), pricing.getConfidence());
+        String status = routingService.determineStatus(suggested, brand, request.getCategory(), pricing.getConfidence(), condition);
 
         // 8. ML validation — sanity check LLM price against ML category knowledge
         // ML knows the category average price — use it to catch suspicious LLM prices

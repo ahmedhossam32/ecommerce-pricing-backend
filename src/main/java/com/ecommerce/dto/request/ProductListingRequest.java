@@ -33,6 +33,8 @@ public class ProductListingRequest {
     @Min(1)
     private Integer photosQty;
 
+    @NotBlank(message = "Condition is required")
     private String condition;
+
     private String conditionNotes;
 }

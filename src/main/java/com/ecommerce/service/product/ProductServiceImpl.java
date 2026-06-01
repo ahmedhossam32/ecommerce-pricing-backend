@@ -144,7 +144,7 @@ public class ProductServiceImpl implements ProductService {
         pricingRequestRepository.save(pr);
 
         String brand = pr.getBrand() != null ? pr.getBrand() : "UNKNOWN";
-        routingService.cacheApprovedRange(brand, product.getCategory(), finalPrice);
+        routingService.cacheApprovedRange(brand, product.getCategory(), finalPrice, pr.getCondition());
 
         return AcceptPriceResponse.builder()
                 .productId(product.getId())

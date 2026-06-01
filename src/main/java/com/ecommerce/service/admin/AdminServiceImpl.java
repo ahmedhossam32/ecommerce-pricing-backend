@@ -145,7 +145,7 @@ public class AdminServiceImpl implements AdminService {
                 .approvedMax(BigDecimal.valueOf(approvedMax))
                 .build());
 
-        routingService.cacheApprovedRange(brand, product.getCategory(), approvedPrice);
+        routingService.cacheApprovedRange(brand, product.getCategory(), approvedPrice, pr.getCondition());
 
         return new ApprovalData(
                 seller.getEmail(), seller.getName(), product.getName(),
@@ -197,7 +197,9 @@ public class AdminServiceImpl implements AdminService {
         product.setPrice(BigDecimal.valueOf(newPrice));
         productRepository.save(product);
 
-        routingService.cacheApprovedRange(brand, product.getCategory(), newPrice);
+        String condition = pricingRequestRepository.findTopByProductOrderByCreatedAtDesc(product)
+                .map(PricingRequest::getCondition).orElse(null);
+        routingService.cacheApprovedRange(brand, product.getCategory(), newPrice, condition);
 
         return new OverrideData(
                 seller.getEmail(), seller.getName(), product.getName(),
