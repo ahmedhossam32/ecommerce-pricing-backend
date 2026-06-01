@@ -49,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (JwtException ignored) {
-            // invalid token — Spring Security will reject the request downstream
+
         }
 
         chain.doFilter(request, response);

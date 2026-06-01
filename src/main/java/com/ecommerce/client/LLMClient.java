@@ -84,20 +84,10 @@ public class LLMClient {
                     - Use CURRENT 2026 market prices in USD for all known brands.
                     - The ML baseline is only reliable for UNKNOWN brands and generic unbranded products.
                       For any recognized brand, override it completely with real market knowledge.
-                    - Condition pricing is CRITICAL — you MUST apply these discounts
-                      to the marketPriceMin and marketPriceMax values.
-                      Never return new retail prices when condition is USED or REFURBISHED:
-                       - NEW or UNKNOWN condition → use current new retail price, no discount
-                       - USED → marketPriceMin and marketPriceMax must be 40-65%% of the
-                         current new retail price for this exact model.
-                         Use 55-65%% for minor cosmetic damage only.
-                         Use 40-50%% for functional issues or heavy wear.
-                         The conditionNotes provided by the seller must influence
-                         where in this range you land.
-                       - REFURBISHED → marketPriceMin and marketPriceMax must be 55-75%%
-                         of the current new retail price for this exact model.
-                       - This discount applies to ALL brands and ALL product types.
-                         A used product is NEVER priced at new retail value.
+                    - Always return the CURRENT NEW RETAIL price for marketPriceMin and marketPriceMax.
+                    - Never apply condition discounts. Price every product as if it is brand new and sealed.
+                    - Condition is provided only so you can assess confidence level correctly.
+                    - The platform applies condition adjustments separately after you respond.
                     - Be model-specific. iPhone 12 and iPhone 17 have very different prices.
                       A 2019 laptop and a 2024 laptop are not the same price.
                     - marketPriceMin must always be less than marketPriceMax.
