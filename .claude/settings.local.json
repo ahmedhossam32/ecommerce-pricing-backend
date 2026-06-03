@@ -17,7 +17,12 @@
       "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c\", \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\\\\mvnw.cmd spring-boot:run > E:\\\\Uni\\\\GP\\\\ecommerce-backend\\\\spring-boot.log 2>&1\" -WorkingDirectory \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\" -WindowStyle Hidden -PassThru | Select-Object Id)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/actuator/health)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/products)",
-      "Bash(Get-ChildItem -Recurse -Filter \"BuyerServiceImpl.java\")"
+      "Bash(Get-ChildItem -Recurse -Filter \"BuyerServiceImpl.java\")",
+      "Bash(Get-Content *)",
+      "Bash(xargs cat)",
+      "Bash(mvn test *)",
+      "PowerShell(Select-String *)",
+      "Bash(xargs ls -la)"
     ]
   }
 }

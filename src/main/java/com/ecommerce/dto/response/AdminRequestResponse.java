@@ -32,6 +32,7 @@ public class AdminRequestResponse {
     private String routingReason;
     private String condition;
     private String conditionNotes;
+    private String conditionGrade;
     private String reasoning;
     private List<String> imageUrls;
     private String sellerProfilePictureUrl;

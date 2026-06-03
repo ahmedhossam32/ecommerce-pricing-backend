@@ -24,5 +24,6 @@ public class PricingSuggestionResponse {
     private Double marketPriceMax;
     private String condition;
     private String conditionNotes;
+    private String conditionGrade;
     private String reasoning;
 }

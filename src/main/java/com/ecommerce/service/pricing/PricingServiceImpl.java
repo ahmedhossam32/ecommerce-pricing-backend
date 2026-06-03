@@ -47,15 +47,13 @@ public class PricingServiceImpl implements PricingService {
         log.debug("=== CATEGORY: {} ===", request.getCategory());
 
         // 5. Resolve condition: seller ground truth takes priority over LLM guess
-        String condition = (request.getCondition() != null && !request.getCondition().isBlank())
-                ? request.getCondition()
-                : (extraction.getCondition() != null ? extraction.getCondition() : "UNKNOWN");
+        String condition = request.getCondition();
+        String conditionGrade = request.getConditionGrade();
 
         String conditionNotes = request.getConditionNotes() != null
                 ? request.getConditionNotes() : "";
 
-        log.debug("=== CONDITION SOURCE: {} ===",
-                (request.getCondition() != null && !request.getCondition().isBlank()) ? "SELLER" : "LLM");
+        log.debug("=== CONDITION SOURCE: SELLER (mandatory field) ===");
         log.debug("=== CONDITION: {} ===", condition);
 
         // 5. LLM Call 2: market price + confidence (runs after ML)
@@ -72,8 +70,8 @@ public class PricingServiceImpl implements PricingService {
         log.info("=== LLM RAW RANGE (new retail): {} - {} ===", pricing.getMarketPriceMin(), pricing.getMarketPriceMax());
         log.debug("=== LLM BRAND: {} ===", extraction.getBrand());
         log.debug("=== LLM REASONING: {} ===", pricing.getReasoning());
-        log.info("=== CONDITION MULTIPLIER: {} ===", getConditionMultiplier(condition, conditionNotes));
-        log.info("=== EXPECTED FINAL: {} ===", round(((pricing.getMarketPriceMin() != null && pricing.getMarketPriceMax() != null) ? (pricing.getMarketPriceMin() + pricing.getMarketPriceMax()) / 2.0 * getConditionMultiplier(condition, conditionNotes) : 0.0)));
+        log.info("=== CONDITION MULTIPLIER: {} ===", getConditionMultiplier(condition, conditionGrade));
+        log.info("=== EXPECTED FINAL: {} ===", round(((pricing.getMarketPriceMin() != null && pricing.getMarketPriceMax() != null) ? (pricing.getMarketPriceMin() + pricing.getMarketPriceMax()) / 2.0 * getConditionMultiplier(condition, conditionGrade) : 0.0)));
 
         // Resolve brand early — needed for UNKNOWN guard below
         String brand = extraction.getBrand() != null ? extraction.getBrand() : "UNKNOWN";
@@ -90,7 +88,7 @@ public class PricingServiceImpl implements PricingService {
         }
 
         // 6. Combine ML + LLM into suggested price
-        double suggested = computeSuggestedPrice(pricing, mlBaseline, condition, conditionNotes);
+        double suggested = computeSuggestedPrice(pricing, mlBaseline, condition, conditionGrade);
         double minRange  = round(suggested * 0.90);
         double maxRange  = round(suggested * 1.10);
         suggested        = round(suggested);
@@ -136,17 +134,18 @@ public class PricingServiceImpl implements PricingService {
                 .marketPriceMax(pricing.getMarketPriceMax())
                 .condition(condition)
                 .conditionNotes(conditionNotes)
+                .conditionGrade(conditionGrade)
                 .reasoning(pricing.getReasoning())
                 .build();
     }
 
 
     private double computeSuggestedPrice(LLMResponse llm, double mlBaseline,
-                                          String condition, String conditionNotes) {
+                                          String condition, String conditionGrade) {
         boolean hasLLMRange = llm.getMarketPriceMin() != null
                               && llm.getMarketPriceMax() != null;
 
-        double multiplier = getConditionMultiplier(condition, conditionNotes);
+        double multiplier = getConditionMultiplier(condition, conditionGrade);
 
         return switch (llm.getConfidence().toUpperCase()) {
 
@@ -175,22 +174,10 @@ public class PricingServiceImpl implements PricingService {
         };
     }
 
-    private double getConditionMultiplier(String condition, String conditionNotes) {
+    private double getConditionMultiplier(String condition, String conditionGrade) {
         if (condition == null) return 1.0;
         return switch (condition.toUpperCase()) {
-            case "USED" -> {
-                if (conditionNotes != null) {
-                    String notes = conditionNotes.toLowerCase();
-                    boolean heavyDamage = notes.contains("crack")
-                            || notes.contains("broken")
-                            || notes.contains("damage")
-                            || notes.contains("heavy wear")
-                            || notes.contains("not working")
-                            || notes.contains("faulty");
-                    if (heavyDamage) yield 0.45;
-                }
-                yield 0.60;
-            }
+            case "USED" -> "HEAVY".equalsIgnoreCase(conditionGrade) ? 0.45 : 0.60;
             case "REFURBISHED" -> 0.65;
             default -> 1.0;
         };

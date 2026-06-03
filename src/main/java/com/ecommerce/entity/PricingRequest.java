@@ -44,6 +44,9 @@ public class PricingRequest {
     @Column(columnDefinition = "TEXT")
     private String conditionNotes;
 
+    @Column(name = "condition_grade")
+    private String conditionGrade;
+
     @Column(columnDefinition = "TEXT")
     private String reasoning;
 

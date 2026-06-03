@@ -76,6 +76,7 @@ public class ProductServiceImpl implements ProductService {
                         ? BigDecimal.valueOf(suggestion.getMarketPriceMax()) : null)
                 .condition(suggestion.getCondition())
                 .conditionNotes(suggestion.getConditionNotes())
+                .conditionGrade(request.getConditionGrade())
                 .reasoning(suggestion.getReasoning())
                 .status(PricingRequestStatus.PENDING)
                 .build();
@@ -102,6 +103,7 @@ public class ProductServiceImpl implements ProductService {
                 .marketPriceMax(suggestion.getMarketPriceMax())
                 .condition(suggestion.getCondition())
                 .conditionNotes(suggestion.getConditionNotes())
+                .conditionGrade(request.getConditionGrade())
                 .reasoning(suggestion.getReasoning())
                 .build();
     }
