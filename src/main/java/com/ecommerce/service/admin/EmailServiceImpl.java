@@ -141,6 +141,28 @@ public class EmailServiceImpl implements EmailService {
         send(toEmail, "Order confirmed — " + productName, buildHtml("Order Confirmed! 🎉", body));
     }
 
+    @Override
+    public void sendProductDeletedEmail(String toEmail, String sellerName,
+                                        String productName, String reason) {
+        String reasonSection = reason != null
+                ? "<tr><td style=\"color:#666;width:40%;\">Reason</td><td>" + reason + "</td></tr>"
+                : "<tr><td style=\"color:#666;width:40%;\">Reason</td><td>No specific reason was provided.</td></tr>";
+
+        String body = """
+                <p>Hi <strong>%s</strong>,</p>
+                <p>Your product listing has been removed from DynaMart by an administrator.</p>
+                <table width="100%%" style="background:#f9f9f9;border-radius:6px;padding:16px;margin:16px 0;">
+                  <tr><td style="color:#666;width:40%%;">Product</td><td><strong>%s</strong></td></tr>
+                  %s
+                </table>
+                <p>If you have questions, please contact our support team.</p>
+                <p style="color:#888;font-size:12px;">Best regards,<br/>The DynaMart Team</p>
+                """.formatted(sellerName, productName, reasonSection);
+
+        send(toEmail, "Your product listing has been removed — DynaMart",
+                buildHtml("Product Listing Removed", body));
+    }
+
     private void send(String to, String subject, String htmlBody) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

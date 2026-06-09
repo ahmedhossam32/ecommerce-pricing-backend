@@ -15,6 +15,7 @@ import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.enums.Role;
 import com.ecommerce.exception.ResourceNotFoundException;
 import com.ecommerce.entity.CategoryBounds;
+import com.ecommerce.dto.request.DeleteProductRequest;
 import com.ecommerce.repository.ApprovedDecisionRepository;
 import com.ecommerce.repository.CartItemRepository;
 import com.ecommerce.repository.CategoryBoundsRepository;
@@ -295,12 +296,21 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public Map<String, String> deleteProduct(Long productId) {
+    public Map<String, String> deleteProduct(Long productId, DeleteProductRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
         product.setStatus(ProductStatus.DELETED);
         productRepository.save(product);
+
+        String reason = (request != null && request.getReason() != null
+                && !request.getReason().isBlank()) ? request.getReason() : null;
+
+        emailService.sendProductDeletedEmail(
+                product.getSeller().getEmail(),
+                product.getSeller().getName(),
+                product.getName(),
+                reason);
 
         log.info("Product {} deleted by ADMIN", productId);
         return Map.of("message", "Product deleted successfully");

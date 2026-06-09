@@ -1,6 +1,7 @@
 package com.ecommerce.controller;
 
 import com.ecommerce.dto.request.ApproveRequest;
+import com.ecommerce.dto.request.DeleteProductRequest;
 import com.ecommerce.dto.request.OverrideRequest;
 import com.ecommerce.dto.request.RejectRequest;
 import com.ecommerce.dto.response.AdminProductResponse;
@@ -76,7 +77,9 @@ public class AdminController {
     @DeleteMapping("/products/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete any product by ID (admin)")
-    public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
-        return ResponseEntity.ok(adminService.deleteProduct(id));
+    public ResponseEntity<Map<String, String>> deleteProduct(
+            @PathVariable Long id,
+            @RequestBody(required = false) DeleteProductRequest request) {
+        return ResponseEntity.ok(adminService.deleteProduct(id, request));
     }
 }

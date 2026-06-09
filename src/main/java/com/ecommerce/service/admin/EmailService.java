@@ -5,4 +5,5 @@ public interface EmailService {
     void sendRejectionEmail(String toEmail, String sellerName, String productName, String reason, double minRange, double maxRange);
     void sendOverrideEmail(String toEmail, String sellerName, String productName, double oldPrice, double newPrice, String adminNote);
     void sendOrderConfirmationEmail(String toEmail, String buyerName, String productName, double price);
+    void sendProductDeletedEmail(String toEmail, String sellerName, String productName, String reason);
 }
