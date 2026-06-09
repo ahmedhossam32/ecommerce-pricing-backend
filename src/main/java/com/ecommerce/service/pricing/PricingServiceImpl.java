@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class PricingServiceImpl implements PricingService {
@@ -35,6 +37,37 @@ public class PricingServiceImpl implements PricingService {
 
         // 2. LLM Call 1: extract brand + weight (runs before ML)
         LLMResponse extraction = llmService.extractProductInfo(request.getDescription());
+
+        // Early cache check — brand now known, check Redis before paying for ML + LLM Call 2
+        String earlyBrand     = extraction.getBrand() != null ? extraction.getBrand() : "UNKNOWN";
+        String earlyCondition = request.getCondition();
+        log.info("=== CACHE-FIRST CHECK: brand={} category={} condition={} ===",
+                earlyBrand, request.getCategory(), earlyCondition);
+        Optional<double[]> cachedRange = routingService.findCachedRange(earlyBrand, request.getCategory(), earlyCondition);
+        if (cachedRange.isPresent()) {
+            double[] range      = cachedRange.get();
+            double cachedMin    = range[0];
+            double cachedMax    = range[1];
+            double suggested    = round((cachedMin + cachedMax) / 2.0);
+            log.info("=== CACHE HIT — skipping ML + LLM Call 2, saved ~5s. range={}-{} ===", cachedMin, cachedMax);
+            return PricingSuggestionResponse.builder()
+                    .suggestedPrice(suggested)
+                    .minRange(cachedMin)
+                    .maxRange(cachedMax)
+                    .confidence("HIGH")
+                    .status("PENDING_SELLER")
+                    .message("Price determined from approved pricing history.")
+                    .brand(earlyBrand)
+                    .mlBaselinePrice(null)
+                    .marketPriceMin(cachedMin)
+                    .marketPriceMax(cachedMax)
+                    .condition(earlyCondition)
+                    .conditionNotes(request.getConditionNotes() != null ? request.getConditionNotes() : "")
+                    .conditionGrade(request.getConditionGrade())
+                    .reasoning("Cached approved pricing range applied.")
+                    .build();
+        }
+        log.info("=== CACHE MISS — proceeding with full ML + LLM pipeline ===");
 
         // 3. Build all 26 ML features using brand + weight from LLM Call 1
         MLRequest mlRequest = featureBuilderService.buildFeatures(request, extraction, seller, stats);

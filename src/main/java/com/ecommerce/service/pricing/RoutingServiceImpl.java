@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +24,7 @@ public class RoutingServiceImpl implements RoutingService {
     private final CategoryBoundsRepository categoryBoundsRepository;
 
     private static final String PREFIX = "pricing:";
+    private static final List<String> PRICE_BUCKETS = List.of("budget", "mid", "premium", "luxury");
 
     @Override
     @Transactional(readOnly = true)
@@ -72,6 +74,28 @@ public class RoutingServiceImpl implements RoutingService {
         double max = Math.round(approvedPrice * 1.10 * 100.0) / 100.0;
         redisTemplate.opsForValue().set(key, min + ":" + max, 30, TimeUnit.DAYS);
         log.info("=== CACHE WRITTEN: key={} range={}-{} ===", key, min, max);
+    }
+
+    @Override
+    public Optional<double[]> findCachedRange(String brand, String category, String condition) {
+        String conditionKey = Condition.from(condition).name().toLowerCase();
+        for (String bucket : PRICE_BUCKETS) {
+            String key = PREFIX + brand.toLowerCase() + ":" + category.toLowerCase() + ":"
+                    + conditionKey + ":" + bucket;
+            String cached = redisTemplate.opsForValue().get(key);
+            if (cached != null) {
+                String[] parts = cached.split(":");
+                if (parts.length == 2) {
+                    try {
+                        return Optional.of(new double[]{
+                                Double.parseDouble(parts[0]),
+                                Double.parseDouble(parts[1])
+                        });
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private String cacheKey(String brand, String category, String condition, double price) {
