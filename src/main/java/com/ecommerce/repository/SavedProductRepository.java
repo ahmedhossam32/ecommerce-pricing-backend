@@ -13,4 +13,5 @@ public interface SavedProductRepository extends JpaRepository<SavedProduct, Long
     Optional<SavedProduct> findByBuyerAndProduct(User buyer, Product product);
     void deleteByBuyerAndProduct(User buyer, Product product);
     void deleteByBuyer(User buyer);
+    void deleteByProduct(Product product);
 }

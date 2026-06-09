@@ -11,6 +11,8 @@ import com.ecommerce.dto.response.SellerDashboardResponse;
 import com.ecommerce.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 import java.util.List;
 
 public interface ProductService {
@@ -21,4 +23,5 @@ public interface ProductService {
     ProductResponse getProductById(Long productId, User seller);
     SellerDashboardResponse getDashboard(User seller);
     List<String> uploadProductImages(Long productId, List<MultipartFile> files, User seller);
+    Map<String, String> deleteProduct(Long productId, User seller);
 }

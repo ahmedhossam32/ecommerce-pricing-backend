@@ -14,13 +14,18 @@ import com.ecommerce.entity.User;
 import com.ecommerce.enums.PricingRequestStatus;
 import com.ecommerce.enums.ProductStatus;
 import com.ecommerce.exception.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
+import com.ecommerce.repository.CartItemRepository;
 import com.ecommerce.repository.OrderRepository;
+import com.ecommerce.repository.PricingHistoryRepository;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.repository.SavedProductRepository;
 import com.ecommerce.service.pricing.PricingService;
 import com.ecommerce.service.pricing.RoutingService;
 import com.ecommerce.service.upload.CloudinaryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -39,6 +46,9 @@ public class ProductServiceImpl implements ProductService {
     private final RoutingService routingService;
     private final OrderRepository orderRepository;
     private final CloudinaryService cloudinaryService;
+    private final CartItemRepository cartItemRepository;
+    private final SavedProductRepository savedProductRepository;
+    private final PricingHistoryRepository pricingHistoryRepository;
 
     @Override
     @Transactional
@@ -189,7 +199,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponse> getSellerProducts(User seller) {
-        return productRepository.findBySeller(seller).stream()
+        return productRepository.findBySellerAndStatusNot(seller, ProductStatus.DELETED).stream()
                 .map(p -> {
                     Double suggestedPrice = pricingRequestRepository
                             .findTopByProductOrderByCreatedAtDesc(p)
@@ -242,7 +252,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public SellerDashboardResponse getDashboard(User seller) {
-        List<Product> products = productRepository.findBySeller(seller);
+        List<Product> products = productRepository.findBySellerAndStatusNot(seller, ProductStatus.DELETED);
         Double revenue = orderRepository.calculateRevenueForSeller(seller);
         return SellerDashboardResponse.builder()
                 .totalProducts(products.size())
@@ -288,6 +298,23 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
 
         return urls;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, String> deleteProduct(Long productId, User seller) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        if (!product.getSeller().getId().equals(seller.getId())) {
+            throw new AccessDeniedException("You do not own this product");
+        }
+
+        product.setStatus(ProductStatus.DELETED);
+        productRepository.save(product);
+
+        log.info("Product {} deleted by SELLER", productId);
+        return Map.of("message", "Product deleted successfully");
     }
 
     private double round(double v) {

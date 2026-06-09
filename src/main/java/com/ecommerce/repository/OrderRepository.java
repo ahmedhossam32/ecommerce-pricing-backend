@@ -1,6 +1,7 @@
 package com.ecommerce.repository;
 
 import com.ecommerce.entity.Order;
+import com.ecommerce.entity.Product;
 import com.ecommerce.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Double calculateRevenueForSeller(@Param("seller") User seller);
 
     long countByProductSeller(User seller);
+    void deleteByProduct(Product product);
 }

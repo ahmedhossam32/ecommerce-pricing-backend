@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findBySeller(User seller);
+    List<Product> findBySellerAndStatusNot(User seller, ProductStatus status);
     Optional<Product> findByIdAndSeller(Long id, User seller);
     long countByStatus(ProductStatus status);
     List<Product> findByStatus(ProductStatus status);

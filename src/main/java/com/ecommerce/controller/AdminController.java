@@ -7,6 +7,7 @@ import com.ecommerce.dto.response.AdminProductResponse;
 import com.ecommerce.dto.response.AdminRequestResponse;
 import com.ecommerce.dto.response.AdminStatsResponse;
 import com.ecommerce.service.admin.AdminService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -70,5 +71,12 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminStatsResponse> getStats() {
         return ResponseEntity.ok(adminService.getStats());
+    }
+
+    @DeleteMapping("/products/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete any product by ID (admin)")
+    public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.deleteProduct(id));
     }
 }

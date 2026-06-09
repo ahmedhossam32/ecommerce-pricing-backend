@@ -16,13 +16,17 @@ import com.ecommerce.enums.Role;
 import com.ecommerce.exception.ResourceNotFoundException;
 import com.ecommerce.entity.CategoryBounds;
 import com.ecommerce.repository.ApprovedDecisionRepository;
+import com.ecommerce.repository.CartItemRepository;
 import com.ecommerce.repository.CategoryBoundsRepository;
 import com.ecommerce.repository.OrderRepository;
+import com.ecommerce.repository.PricingHistoryRepository;
 import com.ecommerce.repository.PricingRequestRepository;
 import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.repository.SavedProductRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.service.pricing.RoutingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
@@ -43,6 +48,9 @@ public class AdminServiceImpl implements AdminService {
     private final RoutingService routingService;
     private final EmailService emailService;
     private final CategoryBoundsRepository categoryBoundsRepository;
+    private final CartItemRepository cartItemRepository;
+    private final SavedProductRepository savedProductRepository;
+    private final PricingHistoryRepository pricingHistoryRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -283,6 +291,19 @@ public class AdminServiceImpl implements AdminService {
                 .imageUrls(product.getImageUrls())
                 .sellerProfilePictureUrl(seller.getProfilePictureUrl())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public Map<String, String> deleteProduct(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        product.setStatus(ProductStatus.DELETED);
+        productRepository.save(product);
+
+        log.info("Product {} deleted by ADMIN", productId);
+        return Map.of("message", "Product deleted successfully");
     }
 
     private double round(double v) {

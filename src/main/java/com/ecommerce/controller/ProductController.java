@@ -3,6 +3,7 @@ package com.ecommerce.controller;
 import com.ecommerce.dto.request.AcceptPriceRequest;
 import com.ecommerce.dto.request.DisputePriceRequest;
 import com.ecommerce.dto.request.ProductListingRequest;
+import io.swagger.v3.oas.annotations.Operation;
 import com.ecommerce.dto.response.AcceptPriceResponse;
 import com.ecommerce.dto.response.DisputeResponse;
 import com.ecommerce.dto.response.ProductResponse;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -88,5 +90,14 @@ public class ProductController {
         }
 
         return ResponseEntity.ok(productService.uploadProductImages(id, files, seller));
+    }
+
+    @DeleteMapping("/seller/products/{id}")
+    @PreAuthorize("hasRole('SELLER')")
+    @Operation(summary = "Delete one of the seller's own products")
+    public ResponseEntity<Map<String, String>> deleteProduct(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User seller) {
+        return ResponseEntity.ok(productService.deleteProduct(id, seller));
     }
 }

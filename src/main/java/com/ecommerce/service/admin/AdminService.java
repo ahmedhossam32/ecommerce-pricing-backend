@@ -18,4 +18,5 @@ public interface AdminService {
     Map<String, String> rejectRequest(Long requestId, RejectRequest request);
     Map<String, String> overridePrice(Long productId, OverrideRequest request);
     AdminStatsResponse getStats();
+    Map<String, String> deleteProduct(Long productId);
 }
