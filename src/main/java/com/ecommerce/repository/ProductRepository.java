@@ -3,6 +3,8 @@ package com.ecommerce.repository;
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.User;
 import com.ecommerce.enums.ProductStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +20,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByStatus(ProductStatus status);
     List<Product> findAllByOrderByCreatedAtDesc();
     List<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status);
+    Page<Product> findByStatus(ProductStatus status, Pageable pageable);
+    Page<Product> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    Page<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(o.priceAtPurchase), 0) FROM Order o WHERE o.product.seller = :seller")
     Double calculateRevenueForSeller(@Param("seller") User seller);

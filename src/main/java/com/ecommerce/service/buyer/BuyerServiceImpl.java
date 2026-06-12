@@ -19,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -38,6 +41,13 @@ public class BuyerServiceImpl implements BuyerService {
                 .stream()
                 .map(this::toSummaryResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BuyerProductResponse> getAllLiveProducts(Pageable pageable) {
+        return productRepository.findByStatus(ProductStatus.LIVE, pageable)
+                .map(this::toSummaryResponse);
     }
 
     @Override
