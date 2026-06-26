@@ -22,7 +22,8 @@
       "Bash(xargs cat)",
       "Bash(mvn test *)",
       "PowerShell(Select-String *)",
-      "Bash(xargs ls -la)"
+      "Bash(xargs ls -la)",
+      "PowerShell(cd \"E:\\\\Uni\\\\GP\\\\ecommerce-backend\"; .\\\\mvnw.cmd compile -q; if \\($LASTEXITCODE -eq 0\\) { \"BUILD SUCCESS\" } else { \"BUILD FAILED \\(exit $LASTEXITCODE\\)\" })"
     ]
   }
 }
