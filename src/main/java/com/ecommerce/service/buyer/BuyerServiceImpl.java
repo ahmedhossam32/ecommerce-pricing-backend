@@ -66,6 +66,9 @@ public class BuyerServiceImpl implements BuyerService {
     public List<PriceHistoryResponse> getProductHistory(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (product.getStatus() != ProductStatus.LIVE) {
+            throw new ResourceNotFoundException("Product not found");
+        }
 
         List<PricingRequest> requests = pricingRequestRepository.findByProduct(product);
 
