@@ -36,9 +36,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     /** Rules keyed by "METHOD:URI". Only exact path + method combinations are matched. */
     private static final Map<String, Limit> RULES = Map.of(
-            "POST:/api/auth/login",    new Limit(5,  60_000),
-            "POST:/api/auth/register", new Limit(5,  60_000),
-            "POST:/api/products",      new Limit(10, 60_000)
+            "POST:/api/auth/login",       new Limit(5,  60_000),
+            "POST:/api/auth/register",    new Limit(5,  60_000),
+            "POST:/api/products",         new Limit(10, 60_000),
+            "POST:/api/pricing/suggest",  new Limit(5,  60_000)
     );
 
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
