@@ -51,7 +51,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional(readOnly = true)
     public List<CartResponse> getCart(User buyer) {
-        return cartItemRepository.findByBuyer(buyer)
+        return cartItemRepository.findByBuyerWithProductAndSeller(buyer)
                 .stream()
                 .map(this::toResponse)
                 .toList();
