@@ -32,9 +32,14 @@ public class RoutingServiceImpl implements RoutingService {
 
 
 
-        // Layer 1 — Redis cache check
+        // Layer 1 — Redis cache check (Redis is optional; fall through on connection failure)
         String cacheKey = cacheKey(brand, category, condition, price);
-        String cached = redisTemplate.opsForValue().get(cacheKey);
+        String cached = null;
+        try {
+            cached = redisTemplate.opsForValue().get(cacheKey);
+        } catch (Exception redisEx) {
+            log.warn("Redis unavailable for determineStatus cache check — falling through: {}", redisEx.getMessage());
+        }
         if (cached != null) {
             log.info("Cache hit for key: {}", cacheKey);
             String[] parts = cached.split(":");
@@ -82,7 +87,13 @@ public class RoutingServiceImpl implements RoutingService {
         for (String bucket : PRICE_BUCKETS) {
             String key = PREFIX + brand.toLowerCase() + ":" + category.toLowerCase() + ":"
                     + conditionKey + ":" + bucket;
-            String cached = redisTemplate.opsForValue().get(key);
+            String cached;
+            try {
+                cached = redisTemplate.opsForValue().get(key);
+            } catch (Exception redisEx) {
+                log.warn("Redis unavailable for findCachedRange — treating as cache miss: {}", redisEx.getMessage());
+                return Optional.empty();
+            }
             if (cached != null) {
                 String[] parts = cached.split(":");
                 if (parts.length == 2) {

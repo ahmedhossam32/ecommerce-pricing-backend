@@ -49,55 +49,18 @@ public class ProductServiceImpl implements ProductService {
     private final CartItemRepository cartItemRepository;
     private final SavedProductRepository savedProductRepository;
     private final PricingHistoryRepository pricingHistoryRepository;
+    private final ProductPersistenceHelper persistenceHelper;
 
     @Override
-    @Transactional
     public PricingSuggestionResponse listProduct(ProductListingRequest request, User seller) {
-        // Save product as DRAFT first so we have an id for PricingRequest
-        Product product = Product.builder()
-                .seller(seller)
-                .name(request.getName())
-                .description(request.getDescription())
-                .category(request.getCategory())
-                .weight(request.getWeight())
-                .freightValue(request.getFreightValue())
-                .photosQty(request.getPhotosQty())
-                .status(ProductStatus.DRAFT)
-                .build();
-        product = productRepository.save(product);
+        // Step 1: commit the DRAFT row — transaction opens and closes here
+        Product product = persistenceHelper.saveDraftProduct(request, seller);
 
-        // Run the full pricing engine
+        // Step 2: run the LLM+ML pipeline — no transaction or DB connection held
         PricingSuggestionResponse suggestion = pricingService.getSuggestion(request, seller);
 
-        // Set brand on product from LLM extraction result
-        product.setBrand(suggestion.getBrand());
-
-        // Persist PricingRequest with all LLM-derived fields linked to this product
-        PricingRequest pr = PricingRequest.builder()
-                .product(product)
-                .suggestedPrice(BigDecimal.valueOf(suggestion.getSuggestedPrice()))
-                .brand(suggestion.getBrand())
-                .llmConfidence(suggestion.getConfidence())
-                .mlBaselinePrice(suggestion.getMlBaselinePrice() != null
-                        ? BigDecimal.valueOf(suggestion.getMlBaselinePrice()) : null)
-                .marketPriceMin(suggestion.getMarketPriceMin() != null
-                        ? BigDecimal.valueOf(suggestion.getMarketPriceMin()) : null)
-                .marketPriceMax(suggestion.getMarketPriceMax() != null
-                        ? BigDecimal.valueOf(suggestion.getMarketPriceMax()) : null)
-                .condition(suggestion.getCondition())
-                .conditionNotes(suggestion.getConditionNotes())
-                .conditionGrade(request.getConditionGrade())
-                .reasoning(suggestion.getReasoning())
-                .status(PricingRequestStatus.PENDING)
-                .build();
-        pricingRequestRepository.save(pr);
-
-        // Update product status based on routing decision
-        switch (suggestion.getStatus()) {
-            case "PENDING_ADMIN" -> product.setStatus(ProductStatus.PENDING_REVIEW);
-            // PENDING_SELLER stays DRAFT — seller must accept or dispute
-        }
-        productRepository.save(product);
+        // Step 3: persist PricingRequest + update product status — new short transaction
+        persistenceHelper.finalizePricingRequest(product, request, suggestion);
 
         return PricingSuggestionResponse.builder()
                 .productId(product.getId())
