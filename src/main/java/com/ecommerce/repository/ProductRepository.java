@@ -24,6 +24,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAllByOrderByCreatedAtDesc(Pageable pageable);
     Page<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status, Pageable pageable);
 
+    @Query(value = "SELECT p FROM Product p JOIN FETCH p.seller ORDER BY p.createdAt DESC",
+           countQuery = "SELECT COUNT(p) FROM Product p")
+    Page<Product> findAllByOrderByCreatedAtDescWithSeller(Pageable pageable);
+
+    @Query(value = "SELECT p FROM Product p JOIN FETCH p.seller " +
+                   "WHERE p.status = :status ORDER BY p.createdAt DESC",
+           countQuery = "SELECT COUNT(p) FROM Product p WHERE p.status = :status")
+    Page<Product> findByStatusOrderByCreatedAtDescWithSeller(
+            @Param("status") ProductStatus status, Pageable pageable);
+
     @Query("SELECT COALESCE(SUM(o.priceAtPurchase), 0) FROM Order o WHERE o.product.seller = :seller")
     Double calculateRevenueForSeller(@Param("seller") User seller);
 }

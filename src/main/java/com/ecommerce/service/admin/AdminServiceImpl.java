@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -105,10 +106,23 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(readOnly = true)
     public Page<AdminProductResponse> getAllProducts(String status, Pageable pageable) {
         Page<Product> products = (status != null && !status.isBlank())
-                ? productRepository.findByStatusOrderByCreatedAtDesc(
+                ? productRepository.findByStatusOrderByCreatedAtDescWithSeller(
                     ProductStatus.valueOf(status.toUpperCase()), pageable)
-                : productRepository.findAllByOrderByCreatedAtDesc(pageable);
-        return products.map(this::toAdminProductResponse);
+                : productRepository.findAllByOrderByCreatedAtDescWithSeller(pageable);
+
+        List<Product> productList = products.getContent();
+        Map<Long, PricingRequest> latestRequestByProductId = pricingRequestRepository
+                .findByProductIn(productList)
+                .stream()
+                .collect(Collectors.toMap(
+                        pr -> pr.getProduct().getId(),
+                        pr -> pr,
+                        (existing, incoming) ->
+                                incoming.getCreatedAt().isAfter(existing.getCreatedAt()) ? incoming : existing
+                ));
+
+        return products.map(product ->
+                toAdminProductResponse(product, latestRequestByProductId.get(product.getId())));
     }
 
     @Override
@@ -220,11 +234,9 @@ public class AdminServiceImpl implements AdminService {
                         "newPrice", String.valueOf(newPrice)));
     }
 
-    private AdminProductResponse toAdminProductResponse(Product product) {
+    private AdminProductResponse toAdminProductResponse(Product product, PricingRequest latestPrRaw) {
         User seller = product.getSeller();
-
-        Optional<PricingRequest> latestPr = pricingRequestRepository
-                .findTopByProductOrderByCreatedAtDesc(product);
+        Optional<PricingRequest> latestPr = Optional.ofNullable(latestPrRaw);
 
         Double suggestedPrice = latestPr
                 .map(pr -> pr.getSuggestedPrice() != null ? pr.getSuggestedPrice().doubleValue() : null)
