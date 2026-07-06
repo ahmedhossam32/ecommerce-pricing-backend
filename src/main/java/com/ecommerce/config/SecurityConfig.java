@@ -43,6 +43,7 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
+                .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/user/profile-picture").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/products/*/images").hasRole("SELLER")
                 .anyRequest().authenticated()
