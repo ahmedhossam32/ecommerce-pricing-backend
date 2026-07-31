@@ -28,6 +28,8 @@ spring.ai.openai.chat.options.temperature=0.1
 
 # ML Service
 ml.service.url=http://localhost:8000
+ml.service.connect-timeout-ms=3000
+ml.service.read-timeout-ms=10000
 
 # Email
 spring.mail.host=smtp.gmail.com
