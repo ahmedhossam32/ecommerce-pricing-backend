@@ -30,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,29 +70,67 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public Map<String, String> approveRequest(Long requestId, ApproveRequest request) {
         ApprovalData data = doApproveTransaction(requestId, request);
-        emailService.sendApprovalEmail(
-                data.sellerEmail(), data.sellerName(),
-                data.productName(), data.approvedPrice(), data.adminNote());
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    routingService.cacheApprovedRange(
+                            data.brand(), data.category(), data.approvedPrice(), data.condition());
+                } catch (Exception e) {
+                    log.warn("Failed to update pricing cache after approving request {}: {}",
+                            requestId, e.getMessage());
+                }
+                emailService.sendApprovalEmail(
+                        data.sellerEmail(), data.sellerName(),
+                        data.productName(), data.approvedPrice(), data.adminNote());
+            }
+        });
+
         return data.response();
     }
 
     @Override
+    @Transactional
     public Map<String, String> rejectRequest(Long requestId, RejectRequest request) {
         RejectionData data = doRejectTransaction(requestId, request);
-        emailService.sendRejectionEmail(
-                data.sellerEmail(), data.sellerName(),
-                data.productName(), data.rejectionReason(), data.minRange(), data.maxRange());
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                emailService.sendRejectionEmail(
+                        data.sellerEmail(), data.sellerName(),
+                        data.productName(), data.rejectionReason(), data.minRange(), data.maxRange());
+            }
+        });
+
         return data.response();
     }
 
     @Override
+    @Transactional
     public Map<String, String> overridePrice(Long productId, OverrideRequest request) {
         OverrideData data = doOverrideTransaction(productId, request);
-        emailService.sendOverrideEmail(
-                data.sellerEmail(), data.sellerName(),
-                data.productName(), data.oldPrice(), data.newPrice(), data.adminNote());
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try {
+                    routingService.cacheApprovedRange(
+                            data.brand(), data.category(), data.newPrice(), data.condition());
+                } catch (Exception e) {
+                    log.warn("Failed to update pricing cache after overriding product {}: {}",
+                            productId, e.getMessage());
+                }
+                emailService.sendOverrideEmail(
+                        data.sellerEmail(), data.sellerName(),
+                        data.productName(), data.oldPrice(), data.newPrice(), data.adminNote());
+            }
+        });
+
         return data.response();
     }
 
@@ -140,7 +180,6 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
-    @Transactional
     private ApprovalData doApproveTransaction(Long requestId, ApproveRequest request) {
         PricingRequest pr = pricingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
@@ -169,15 +208,13 @@ public class AdminServiceImpl implements AdminService {
                 .approvedMax(BigDecimal.valueOf(approvedMax))
                 .build());
 
-        routingService.cacheApprovedRange(brand, product.getCategory(), approvedPrice, pr.getCondition());
-
         return new ApprovalData(
                 seller.getEmail(), seller.getName(), product.getName(),
                 approvedPrice, request.getAdminNote(),
+                brand, product.getCategory(), pr.getCondition(),
                 Map.of("message", "Product approved and seller notified.", "status", "APPROVED"));
     }
 
-    @Transactional
     private RejectionData doRejectTransaction(Long requestId, RejectRequest request) {
         PricingRequest pr = pricingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
@@ -204,7 +241,6 @@ public class AdminServiceImpl implements AdminService {
                 Map.of("message", "Product rejected and seller notified.", "status", "REJECTED"));
     }
 
-    @Transactional
     private OverrideData doOverrideTransaction(Long productId, OverrideRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
@@ -223,11 +259,11 @@ public class AdminServiceImpl implements AdminService {
 
         String condition = pricingRequestRepository.findTopByProductOrderByCreatedAtDesc(product)
                 .map(PricingRequest::getCondition).orElse(null);
-        routingService.cacheApprovedRange(brand, product.getCategory(), newPrice, condition);
 
         return new OverrideData(
                 seller.getEmail(), seller.getName(), product.getName(),
                 oldPrice, newPrice, request.getAdminNote(),
+                brand, product.getCategory(), condition,
                 Map.of(
                         "message", "Price overridden, cache updated and seller notified.",
                         "oldPrice", String.valueOf(oldPrice),
@@ -339,6 +375,9 @@ public class AdminServiceImpl implements AdminService {
             String productName,
             double approvedPrice,
             String adminNote,
+            String brand,
+            String category,
+            String condition,
             Map<String, String> response
     ) {}
 
@@ -359,6 +398,9 @@ public class AdminServiceImpl implements AdminService {
             double oldPrice,
             double newPrice,
             String adminNote,
+            String brand,
+            String category,
+            String condition,
             Map<String, String> response
     ) {}
 }
