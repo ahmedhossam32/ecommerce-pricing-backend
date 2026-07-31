@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
  * dependency-free unit tests (Mockito-only, no Spring context) elsewhere in src/test.
  */
 @DisplayName("MLClient — timeout fix (behavioral verification)")
-class MLClientTimeoutIT {
+class MLClientTimeoutTest {
 
     private HttpServer server;
 

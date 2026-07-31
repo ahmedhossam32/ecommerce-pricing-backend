@@ -60,7 +60,7 @@ import static org.mockito.Mockito.when;
 @Import(AdminServiceImpl.class)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @DisplayName("AdminServiceImpl — transaction boundary fix (behavioral verification)")
-class AdminServiceImplTransactionIT {
+class AdminServiceImplTransactionTest {
 
     @Autowired private AdminServiceImpl adminService;
     @Autowired private ProductRepository productRepository;

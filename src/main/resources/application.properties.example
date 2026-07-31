@@ -31,6 +31,9 @@ ml.service.url=http://localhost:8000
 ml.service.connect-timeout-ms=3000
 ml.service.read-timeout-ms=10000
 
+# CORS - comma-separated list of allowed origins
+app.cors.allowed-origins=http://localhost:5173
+
 # Email
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
