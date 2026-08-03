@@ -42,7 +42,7 @@ public class ProductController {
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<AcceptPriceResponse> acceptPrice(
             @PathVariable Long id,
-            @RequestBody(required = false) AcceptPriceRequest request,
+            @Valid @RequestBody(required = false) AcceptPriceRequest request,
             @AuthenticationPrincipal User seller) {
         return ResponseEntity.ok(productService.acceptPrice(id, request, seller));
     }
