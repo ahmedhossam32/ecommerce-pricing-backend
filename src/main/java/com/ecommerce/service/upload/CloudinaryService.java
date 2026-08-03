@@ -44,12 +44,4 @@ public class CloudinaryService {
             throw new RuntimeException("Product image upload failed: " + e.getMessage());
         }
     }
-
-    public void deleteImage(String publicId) {
-        try {
-            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
-        } catch (IOException e) {
-            throw new RuntimeException("Image deletion failed: " + e.getMessage());
-        }
-    }
 }

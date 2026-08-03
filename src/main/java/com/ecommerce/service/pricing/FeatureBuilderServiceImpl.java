@@ -71,13 +71,6 @@ public class FeatureBuilderServiceImpl implements FeatureBuilderService {
         return 500.0;
     }
 
-    private String sizeCategory(double weightGrams) {
-        if (weightGrams < 500) return "small";
-        if (weightGrams < 2000) return "medium";
-        if (weightGrams < 10000) return "large";
-        return "very_large";
-    }
-
     private double d(Double value, double fallback) {
         return value != null ? value : fallback;
     }

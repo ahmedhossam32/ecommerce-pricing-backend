@@ -4,7 +4,6 @@ import com.ecommerce.dto.request.ProductListingRequest;
 import com.ecommerce.dto.response.LLMResponse;
 import com.ecommerce.dto.response.MLResponse;
 import com.ecommerce.dto.response.PricingSuggestionResponse;
-import com.ecommerce.entity.CategoryStats;
 import com.ecommerce.entity.User;
 import com.ecommerce.repository.CategoryStatsRepository;
 import org.junit.jupiter.api.BeforeEach;
