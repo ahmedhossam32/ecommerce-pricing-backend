@@ -5,6 +5,7 @@ import com.ecommerce.auth.service.JwtService;
 import com.ecommerce.auth.service.impl.JwtServiceImpl;
 import com.ecommerce.buyer.controller.BuyerController;
 import com.ecommerce.common.filter.JwtAuthFilter;
+import com.ecommerce.common.security.CustomAuthenticationEntryPoint;
 import com.ecommerce.pricing.controller.PricingController;
 import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;
 import com.ecommerce.user.entity.User;
@@ -53,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * deliberately excludes.
  */
 @WebMvcTest(controllers = {BuyerController.class, PricingController.class})
-@Import({SecurityConfig.class, JwtAuthFilter.class, RateLimitingFilter.class, JwtServiceImpl.class})
+@Import({SecurityConfig.class, JwtAuthFilter.class, RateLimitingFilter.class, JwtServiceImpl.class, CustomAuthenticationEntryPoint.class})
 @TestPropertySource(properties = {
         "app.jwt.secret=dGVzdC1zZWNyZXQta2V5LWZvci1jb3JzLXRlc3RzLW9ubHktMzItYnl0ZXM=",
         "app.jwt.expiration=3600000",
