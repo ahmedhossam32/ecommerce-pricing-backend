@@ -35,10 +35,7 @@ public class AuthServiceImpl implements AuthService {
             throw new EmailAlreadyExistsException("Email already registered: " + request.getEmail());
         }
 
-        Role role = request.getRole();
-        if (role == null || role == Role.ADMIN) {
-            role = Role.BUYER;
-        }
+        Role role = request.getRole() == Role.ADMIN ? Role.BUYER : request.getRole();
 
         User user = authMapper.toUser(request, passwordEncoder.encode(request.getPassword()), role);
 
@@ -70,6 +67,9 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new TokenRefreshException("User not found for refresh token"));
         if (!jwtService.isValid(refreshToken, email)) {
             throw new TokenRefreshException("Refresh token expired or invalid");
+        }
+        if (!jwtService.isRefreshToken(refreshToken)) {
+            throw new TokenRefreshException("Provided token is not a refresh token");
         }
         return authMapper.toAuthResponse(
                 user,
