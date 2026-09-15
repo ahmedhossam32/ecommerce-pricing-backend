@@ -1,4 +1,4 @@
-package com.ecommerce.auth.security;
+package com.ecommerce.common.security;
 
 import com.ecommerce.auth.entity.CustomUserDetails;
 import com.ecommerce.common.enums.Role;
