@@ -1,8 +1,9 @@
 package com.ecommerce.common.config;
 
+import com.ecommerce.auth.service.impl.JwtServiceImpl;
 import com.ecommerce.buyer.controller.BuyerController;
 import com.ecommerce.buyer.service.BuyerService;
-import com.ecommerce.common.util.JwtUtil;
+import com.ecommerce.common.filter.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * set), so this is kept separate from SecurityConfigCorsIT rather than sharing a context.
  */
 @WebMvcTest(controllers = BuyerController.class)
-@Import({SecurityConfig.class, JwtAuthFilter.class, RateLimitingFilter.class, JwtUtil.class})
+@Import({SecurityConfig.class, JwtAuthFilter.class, RateLimitingFilter.class, JwtServiceImpl.class})
 @TestPropertySource(properties = {
         "app.jwt.secret=dGVzdC1zZWNyZXQta2V5LWZvci1jb3JzLXRlc3RzLW9ubHktMzItYnl0ZXM=",
         "app.jwt.expiration=3600000",

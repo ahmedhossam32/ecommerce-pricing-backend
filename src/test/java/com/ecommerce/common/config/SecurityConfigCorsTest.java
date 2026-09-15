@@ -1,13 +1,16 @@
 package com.ecommerce.common.config;
 
+import com.ecommerce.auth.entity.CustomUserDetails;
+import com.ecommerce.auth.service.JwtService;
+import com.ecommerce.auth.service.impl.JwtServiceImpl;
 import com.ecommerce.buyer.controller.BuyerController;
+import com.ecommerce.common.filter.JwtAuthFilter;
 import com.ecommerce.pricing.controller.PricingController;
 import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;
 import com.ecommerce.user.entity.User;
 import com.ecommerce.common.enums.Role;
 import com.ecommerce.buyer.service.BuyerService;
 import com.ecommerce.pricing.service.PricingService;
-import com.ecommerce.common.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * here). @WebMvcTest sidesteps all of that: it loads only the web MVC layer, so none of
  * JPA/Redis/Spring AI/Mail/Cloudinary auto-configuration is even attempted.
  *
- * SecurityConfig/JwtAuthFilter/RateLimitingFilter/JwtUtil are @Component/@Configuration
+ * SecurityConfig/JwtAuthFilter/RateLimitingFilter/JwtServiceImpl are @Component/@Configuration
  * beans that @WebMvcTest does not auto-scan, so they're explicitly @Import-ed -- this
  * exercises the REAL security filter chain (including the real CorsFilter wiring under
  * test), not a re-implementation of it. UserDetailsService/BuyerService/PricingService
@@ -50,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * deliberately excludes.
  */
 @WebMvcTest(controllers = {BuyerController.class, PricingController.class})
-@Import({SecurityConfig.class, JwtAuthFilter.class, RateLimitingFilter.class, JwtUtil.class})
+@Import({SecurityConfig.class, JwtAuthFilter.class, RateLimitingFilter.class, JwtServiceImpl.class})
 @TestPropertySource(properties = {
         "app.jwt.secret=dGVzdC1zZWNyZXQta2V5LWZvci1jb3JzLXRlc3RzLW9ubHktMzItYnl0ZXM=",
         "app.jwt.expiration=3600000",
@@ -64,7 +67,7 @@ class SecurityConfigCorsTest {
     private static final String DISALLOWED_ORIGIN = "http://evil.example.com";
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private JwtUtil jwtUtil;
+    @Autowired private JwtService jwtService;
 
     @MockBean private UserDetailsService userDetailsService;
     @MockBean private BuyerService buyerService;
@@ -130,7 +133,7 @@ class SecurityConfigCorsTest {
                 .password("hashed")
                 .role(Role.SELLER)
                 .build();
-        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(seller);
+        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(CustomUserDetails.fromUser(seller));
         when(pricingService.getSuggestion(any(), any())).thenReturn(PricingSuggestionResponse.builder()
                 .suggestedPrice(100.0)
                 .status("PENDING_SELLER")
@@ -146,7 +149,7 @@ class SecurityConfigCorsTest {
                 .andExpect(header().string("Access-Control-Allow-Origin", ALLOWED_ORIGIN));
 
         // 2) the real, authenticated request the preflight was clearing the way for
-        String token = jwtUtil.generateAccessToken("seller@test.com");
+        String token = jwtService.generateAccessToken(1L, "seller@test.com", "Test Seller", Role.SELLER);
         String body = """
                 {
                   "name": "Test Product",
