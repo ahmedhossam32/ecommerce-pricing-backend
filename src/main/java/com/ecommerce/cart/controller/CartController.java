@@ -1,8 +1,8 @@
-package com.ecommerce.controller;
+package com.ecommerce.cart.controller;
 
-import com.ecommerce.dto.response.CartResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.service.cart.CartService;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.cart.dto.response.CartResponse;
+import com.ecommerce.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

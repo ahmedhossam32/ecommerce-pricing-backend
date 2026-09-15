@@ -1,7 +1,7 @@
-package com.ecommerce.service.cart;
+package com.ecommerce.cart.service;
 
-import com.ecommerce.dto.response.CartResponse;
-import com.ecommerce.entity.User;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.cart.dto.response.CartResponse;
 
 import java.util.List;
 

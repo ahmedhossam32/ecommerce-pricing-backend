@@ -1,13 +1,14 @@
-package com.ecommerce.service.cart;
+package com.ecommerce.cart.service.impl;
 
-import com.ecommerce.dto.response.CartResponse;
-import com.ecommerce.entity.CartItem;
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.User;
-import com.ecommerce.enums.ProductStatus;
-import com.ecommerce.exception.ResourceNotFoundException;
-import com.ecommerce.repository.CartItemRepository;
-import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.product.entity.Product;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.common.exception.ResourceNotFoundException;
+import com.ecommerce.product.repository.ProductRepository;
+import com.ecommerce.cart.entity.CartItem;
+import com.ecommerce.cart.repository.CartItemRepository;
+import com.ecommerce.cart.dto.response.CartResponse;
+import com.ecommerce.cart.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
