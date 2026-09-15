@@ -1,11 +1,11 @@
-package com.ecommerce.controller;
+package com.ecommerce.buyer.controller;
 
-import com.ecommerce.dto.request.OrderRequest;
-import com.ecommerce.dto.response.BuyerProductResponse;
-import com.ecommerce.dto.response.OrderResponse;
-import com.ecommerce.dto.response.PriceHistoryResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.service.buyer.BuyerService;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.buyer.dto.response.BuyerProductResponse;
+import com.ecommerce.buyer.service.BuyerService;
+import com.ecommerce.buyer.dto.request.OrderRequest;
+import com.ecommerce.buyer.dto.response.OrderResponse;
+import com.ecommerce.buyer.dto.response.PriceHistoryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
