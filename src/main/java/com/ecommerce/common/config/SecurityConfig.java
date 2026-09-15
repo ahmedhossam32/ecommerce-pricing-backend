@@ -1,5 +1,6 @@
 package com.ecommerce.common.config;
 
+import com.ecommerce.common.filter.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
