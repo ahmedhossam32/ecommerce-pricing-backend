@@ -1,5 +1,7 @@
-package com.ecommerce.entity;
+package com.ecommerce.order.entity;
 
+import com.ecommerce.product.entity.Product;
+import com.ecommerce.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
