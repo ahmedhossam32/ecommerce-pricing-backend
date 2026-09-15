@@ -5,7 +5,7 @@ import com.ecommerce.common.enums.Role;
 import com.ecommerce.common.exception.EmailAlreadyExistsException;
 import com.ecommerce.common.exception.TokenRefreshException;
 import com.ecommerce.user.repository.UserRepository;
-import com.ecommerce.common.util.JwtUtil;
+import com.ecommerce.auth.service.JwtService;
 import com.ecommerce.auth.dto.response.AuthResponse;
 import com.ecommerce.auth.service.AuthService;
 import com.ecommerce.auth.dto.request.LoginRequest;
@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     @Override
@@ -62,15 +62,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public AuthResponse refresh(String refreshToken) {
-        String email = jwtUtil.extractEmail(refreshToken);
+        String email = jwtService.extractEmail(refreshToken);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new TokenRefreshException("User not found for refresh token"));
-        if (!jwtUtil.isValid(refreshToken, email)) {
+        if (!jwtService.isValid(refreshToken, email)) {
             throw new TokenRefreshException("Refresh token expired or invalid");
         }
         return AuthResponse.builder()
-                .accessToken(jwtUtil.generateAccessToken(email))
+                .accessToken(jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()))
                 .refreshToken(refreshToken)
+                .userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
@@ -80,8 +81,9 @@ public class AuthServiceImpl implements AuthService {
 
     private AuthResponse buildResponse(User user) {
         return AuthResponse.builder()
-                .accessToken(jwtUtil.generateAccessToken(user.getEmail()))
-                .refreshToken(jwtUtil.generateRefreshToken(user.getEmail()))
+                .accessToken(jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()))
+                .refreshToken(jwtService.generateRefreshToken(user.getId(), user.getEmail(), user.getName(), user.getRole()))
+                .userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole())
