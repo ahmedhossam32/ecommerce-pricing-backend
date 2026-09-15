@@ -5,6 +5,7 @@ import com.ecommerce.common.enums.Role;
 import com.ecommerce.common.exception.EmailAlreadyExistsException;
 import com.ecommerce.common.exception.TokenRefreshException;
 import com.ecommerce.user.repository.UserRepository;
+import com.ecommerce.auth.mapper.AuthMapper;
 import com.ecommerce.auth.service.JwtService;
 import com.ecommerce.auth.dto.response.AuthResponse;
 import com.ecommerce.auth.service.AuthService;
@@ -25,6 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final AuthMapper authMapper;
 
     @Override
     @Transactional
@@ -38,15 +40,13 @@ public class AuthServiceImpl implements AuthService {
             role = Role.BUYER;
         }
 
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(role)
-                .build();
+        User user = authMapper.toUser(request, passwordEncoder.encode(request.getPassword()), role);
 
         userRepository.save(user);
-        return buildResponse(user);
+        return authMapper.toAuthResponse(
+                user,
+                jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()),
+                jwtService.generateRefreshToken(user.getId(), user.getEmail(), user.getName(), user.getRole()));
     }
 
     @Override
@@ -56,7 +56,10 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        return buildResponse(user);
+        return authMapper.toAuthResponse(
+                user,
+                jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()),
+                jwtService.generateRefreshToken(user.getId(), user.getEmail(), user.getName(), user.getRole()));
     }
 
     @Override
@@ -68,26 +71,9 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtService.isValid(refreshToken, email)) {
             throw new TokenRefreshException("Refresh token expired or invalid");
         }
-        return AuthResponse.builder()
-                .accessToken(jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()))
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .profilePictureUrl(user.getProfilePictureUrl())
-                .build();
-    }
-
-    private AuthResponse buildResponse(User user) {
-        return AuthResponse.builder()
-                .accessToken(jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()))
-                .refreshToken(jwtService.generateRefreshToken(user.getId(), user.getEmail(), user.getName(), user.getRole()))
-                .userId(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .profilePictureUrl(user.getProfilePictureUrl())
-                .build();
+        return authMapper.toAuthResponse(
+                user,
+                jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getName(), user.getRole()),
+                refreshToken);
     }
 }
