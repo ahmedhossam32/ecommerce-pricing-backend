@@ -1,8 +1,8 @@
-package com.ecommerce.controller;
+package com.ecommerce.wishlist.controller;
 
-import com.ecommerce.dto.response.SavedProductResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.service.wishlist.WishlistService;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.wishlist.dto.response.SavedProductResponse;
+import com.ecommerce.wishlist.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

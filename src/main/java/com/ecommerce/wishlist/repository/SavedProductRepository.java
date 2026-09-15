@@ -1,8 +1,8 @@
-package com.ecommerce.repository;
+package com.ecommerce.wishlist.repository;
 
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.SavedProduct;
-import com.ecommerce.entity.User;
+import com.ecommerce.product.entity.Product;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.wishlist.entity.SavedProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,5 +13,4 @@ public interface SavedProductRepository extends JpaRepository<SavedProduct, Long
     Optional<SavedProduct> findByBuyerAndProduct(User buyer, Product product);
     void deleteByBuyerAndProduct(User buyer, Product product);
     void deleteByBuyer(User buyer);
-    void deleteByProduct(Product product);
 }

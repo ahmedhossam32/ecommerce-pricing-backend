@@ -1,7 +1,7 @@
-package com.ecommerce.service.wishlist;
+package com.ecommerce.wishlist.service;
 
-import com.ecommerce.dto.response.SavedProductResponse;
-import com.ecommerce.entity.User;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.wishlist.dto.response.SavedProductResponse;
 
 import java.util.List;
 
