@@ -1,14 +1,15 @@
-package com.ecommerce.service.auth;
+package com.ecommerce.auth.service.impl;
 
-import com.ecommerce.dto.request.LoginRequest;
-import com.ecommerce.dto.request.RegisterRequest;
-import com.ecommerce.dto.response.AuthResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.enums.Role;
-import com.ecommerce.exception.EmailAlreadyExistsException;
-import com.ecommerce.exception.TokenRefreshException;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.util.JwtUtil;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.common.enums.Role;
+import com.ecommerce.common.exception.EmailAlreadyExistsException;
+import com.ecommerce.common.exception.TokenRefreshException;
+import com.ecommerce.user.repository.UserRepository;
+import com.ecommerce.common.util.JwtUtil;
+import com.ecommerce.auth.dto.response.AuthResponse;
+import com.ecommerce.auth.service.AuthService;
+import com.ecommerce.auth.dto.request.LoginRequest;
+import com.ecommerce.auth.dto.request.RegisterRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

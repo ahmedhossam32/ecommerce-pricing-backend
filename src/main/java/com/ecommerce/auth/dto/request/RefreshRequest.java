@@ -1,4 +1,4 @@
-package com.ecommerce.dto.request;
+package com.ecommerce.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

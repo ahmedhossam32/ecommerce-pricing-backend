@@ -1,6 +1,6 @@
-package com.ecommerce.service.auth;
+package com.ecommerce.auth.service.impl;
 
-import com.ecommerce.repository.UserRepository;
+import com.ecommerce.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

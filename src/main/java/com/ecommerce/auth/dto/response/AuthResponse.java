@@ -1,6 +1,6 @@
-package com.ecommerce.dto.response;
+package com.ecommerce.auth.dto.response;
 
-import com.ecommerce.enums.Role;
+import com.ecommerce.common.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

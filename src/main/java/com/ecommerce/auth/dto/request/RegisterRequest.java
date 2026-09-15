@@ -1,6 +1,6 @@
-package com.ecommerce.dto.request;
+package com.ecommerce.auth.dto.request;
 
-import com.ecommerce.enums.Role;
+import com.ecommerce.common.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
