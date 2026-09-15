@@ -10,4 +10,5 @@ public interface JwtService {
     String extractName(String token);
     Role extractRole(String token);
     boolean isValid(String token, String email);
+    boolean isRefreshToken(String token);
 }

@@ -27,12 +27,12 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String generateAccessToken(Long userId, String email, String name, Role role) {
-        return buildToken(userId, email, name, role, expiration);
+        return buildToken(userId, email, name, role, "access", expiration);
     }
 
     @Override
     public String generateRefreshToken(Long userId, String email, String name, Role role) {
-        return buildToken(userId, email, name, role, refreshExpiration);
+        return buildToken(userId, email, name, role, "refresh", refreshExpiration);
     }
 
     @Override
@@ -60,6 +60,12 @@ public class JwtServiceImpl implements JwtService {
         return extractEmail(token).equals(email) && !isExpired(token);
     }
 
+    @Override
+    public boolean isRefreshToken(String token) {
+        String type = extractClaim(token, claims -> claims.get("type", String.class));
+        return "refresh".equals(type);
+    }
+
     private boolean isExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
@@ -73,12 +79,13 @@ public class JwtServiceImpl implements JwtService {
         return resolver.apply(claims);
     }
 
-    private String buildToken(Long userId, String email, String name, Role role, long ttl) {
+    private String buildToken(Long userId, String email, String name, Role role, String type, long ttl) {
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
                 .claim("name", name)
                 .claim("role", role.name())
+                .claim("type", type)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + ttl))
                 .signWith(signingKey())
