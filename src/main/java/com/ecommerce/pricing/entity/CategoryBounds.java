@@ -1,4 +1,4 @@
-package com.ecommerce.entity;
+package com.ecommerce.pricing.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

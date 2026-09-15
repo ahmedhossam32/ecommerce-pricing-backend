@@ -1,4 +1,4 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service;
 
 import java.util.Optional;
 

@@ -1,6 +1,6 @@
-package com.ecommerce.repository;
+package com.ecommerce.pricing.repository;
+import com.ecommerce.pricing.entity.ApprovedDecision;
 
-import com.ecommerce.entity.ApprovedDecision;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ApprovedDecisionRepository extends JpaRepository<ApprovedDecision, Long> {

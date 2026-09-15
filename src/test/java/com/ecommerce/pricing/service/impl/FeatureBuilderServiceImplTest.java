@@ -1,10 +1,10 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service.impl;
 
-import com.ecommerce.dto.request.MLRequest;
-import com.ecommerce.dto.request.ProductListingRequest;
-import com.ecommerce.dto.response.LLMResponse;
-import com.ecommerce.entity.CategoryStats;
-import com.ecommerce.entity.User;
+import com.ecommerce.product.dto.request.ProductListingRequest;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.pricing.entity.CategoryStats;
+import com.ecommerce.pricing.dto.response.LLMResponse;
+import com.ecommerce.pricing.dto.request.MLRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,8 +1,9 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service.impl;
 
-import com.ecommerce.entity.CategoryBounds;
-import com.ecommerce.enums.Condition;
-import com.ecommerce.repository.CategoryBoundsRepository;
+import com.ecommerce.common.enums.Condition;
+import com.ecommerce.pricing.entity.CategoryBounds;
+import com.ecommerce.pricing.repository.CategoryBoundsRepository;
+import com.ecommerce.pricing.service.RoutingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

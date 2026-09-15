@@ -1,6 +1,7 @@
-package com.ecommerce.entity;
+package com.ecommerce.pricing.entity;
 
-import com.ecommerce.enums.PricingRequestStatus;
+import com.ecommerce.common.enums.PricingRequestStatus;
+import com.ecommerce.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

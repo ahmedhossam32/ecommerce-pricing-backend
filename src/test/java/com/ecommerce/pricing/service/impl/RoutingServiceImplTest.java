@@ -1,7 +1,7 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service.impl;
+import com.ecommerce.pricing.entity.CategoryBounds;
+import com.ecommerce.pricing.repository.CategoryBoundsRepository;
 
-import com.ecommerce.entity.CategoryBounds;
-import com.ecommerce.repository.CategoryBoundsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

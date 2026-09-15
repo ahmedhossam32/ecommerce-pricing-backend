@@ -1,9 +1,9 @@
-package com.ecommerce.client;
+package com.ecommerce.pricing.client;
 
-import com.ecommerce.config.RestTemplateConfig;
-import com.ecommerce.dto.request.MLRequest;
-import com.ecommerce.dto.response.MLResponse;
-import com.ecommerce.exception.PricingException;
+import com.ecommerce.common.config.RestTemplateConfig;
+import com.ecommerce.pricing.dto.request.MLRequest;
+import com.ecommerce.pricing.dto.response.MLResponse;
+import com.ecommerce.pricing.exception.PricingException;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;

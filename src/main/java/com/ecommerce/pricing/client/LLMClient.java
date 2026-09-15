@@ -1,6 +1,6 @@
-package com.ecommerce.client;
+package com.ecommerce.pricing.client;
+import com.ecommerce.pricing.dto.response.LLMResponse;
 
-import com.ecommerce.dto.response.LLMResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;

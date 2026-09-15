@@ -1,7 +1,8 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service.impl;
+import com.ecommerce.pricing.client.LLMClient;
+import com.ecommerce.pricing.dto.response.LLMResponse;
+import com.ecommerce.pricing.service.LLMService;
 
-import com.ecommerce.client.LLMClient;
-import com.ecommerce.dto.response.LLMResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

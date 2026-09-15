@@ -1,11 +1,16 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service.impl;
 
-import com.ecommerce.dto.request.ProductListingRequest;
-import com.ecommerce.dto.response.LLMResponse;
-import com.ecommerce.dto.response.MLResponse;
-import com.ecommerce.dto.response.PricingSuggestionResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.repository.CategoryStatsRepository;
+import com.ecommerce.product.dto.request.ProductListingRequest;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.pricing.repository.CategoryStatsRepository;
+import com.ecommerce.pricing.service.FeatureBuilderService;
+import com.ecommerce.pricing.dto.response.LLMResponse;
+import com.ecommerce.pricing.service.LLMService;
+import com.ecommerce.pricing.dto.request.MLRequest;
+import com.ecommerce.pricing.dto.response.MLResponse;
+import com.ecommerce.pricing.service.MLService;
+import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;
+import com.ecommerce.pricing.service.RoutingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,7 +62,7 @@ class PricingServiceImplTest {
 
         // Default: feature builder returns a minimal MLRequest
         when(featureBuilderService.buildFeatures(any(), any(), any(), any()))
-                .thenReturn(com.ecommerce.dto.request.MLRequest.builder()
+                .thenReturn(MLRequest.builder()
                         .productCategoryNameEnglish("electronics")
                         .build());
     }

@@ -1,9 +1,9 @@
-package com.ecommerce.controller;
+package com.ecommerce.pricing.controller;
 
-import com.ecommerce.dto.request.ProductListingRequest;
-import com.ecommerce.dto.response.PricingSuggestionResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.service.pricing.PricingService;
+import com.ecommerce.product.dto.request.ProductListingRequest;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.pricing.service.PricingService;
+import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

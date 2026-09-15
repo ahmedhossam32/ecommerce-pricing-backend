@@ -1,4 +1,4 @@
-package com.ecommerce.dto.response;
+package com.ecommerce.pricing.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -1,8 +1,8 @@
-package com.ecommerce.client;
+package com.ecommerce.pricing.client;
+import com.ecommerce.pricing.dto.request.MLRequest;
+import com.ecommerce.pricing.dto.response.MLResponse;
+import com.ecommerce.pricing.exception.PricingException;
 
-import com.ecommerce.dto.request.MLRequest;
-import com.ecommerce.dto.response.MLResponse;
-import com.ecommerce.exception.PricingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

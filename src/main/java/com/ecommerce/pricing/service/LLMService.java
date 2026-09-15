@@ -1,6 +1,6 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service;
+import com.ecommerce.pricing.dto.response.LLMResponse;
 
-import com.ecommerce.dto.response.LLMResponse;
 
 public interface LLMService {
     LLMResponse extractProductInfo(String description);

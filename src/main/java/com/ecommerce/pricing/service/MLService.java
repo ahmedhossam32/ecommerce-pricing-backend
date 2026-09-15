@@ -1,7 +1,7 @@
-package com.ecommerce.service.pricing;
+package com.ecommerce.pricing.service;
+import com.ecommerce.pricing.dto.request.MLRequest;
+import com.ecommerce.pricing.dto.response.MLResponse;
 
-import com.ecommerce.dto.request.MLRequest;
-import com.ecommerce.dto.response.MLResponse;
 
 public interface MLService {
     MLResponse predict(MLRequest request);
