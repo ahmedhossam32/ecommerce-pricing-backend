@@ -1,31 +1,30 @@
-package com.ecommerce.service.admin;
+package com.ecommerce.admin.service.impl;
 
-import com.ecommerce.dto.request.ApproveRequest;
-import com.ecommerce.dto.request.OverrideRequest;
-import com.ecommerce.dto.request.RejectRequest;
-import com.ecommerce.dto.response.AdminProductResponse;
-import com.ecommerce.dto.response.AdminRequestResponse;
-import com.ecommerce.dto.response.AdminStatsResponse;
-import com.ecommerce.entity.ApprovedDecision;
-import com.ecommerce.entity.PricingRequest;
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.User;
-import com.ecommerce.enums.PricingRequestStatus;
-import com.ecommerce.enums.ProductStatus;
-import com.ecommerce.enums.Role;
-import com.ecommerce.exception.ResourceNotFoundException;
-import com.ecommerce.entity.CategoryBounds;
-import com.ecommerce.dto.request.DeleteProductRequest;
-import com.ecommerce.repository.ApprovedDecisionRepository;
-import com.ecommerce.repository.CartItemRepository;
-import com.ecommerce.repository.CategoryBoundsRepository;
-import com.ecommerce.repository.OrderRepository;
-import com.ecommerce.repository.PricingHistoryRepository;
-import com.ecommerce.repository.PricingRequestRepository;
-import com.ecommerce.repository.ProductRepository;
-import com.ecommerce.repository.SavedProductRepository;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.service.pricing.RoutingService;
+import com.ecommerce.common.service.EmailService;
+import com.ecommerce.pricing.entity.ApprovedDecision;
+import com.ecommerce.pricing.entity.PricingRequest;
+import com.ecommerce.product.entity.Product;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.common.enums.PricingRequestStatus;
+import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.common.enums.Role;
+import com.ecommerce.common.exception.ResourceNotFoundException;
+import com.ecommerce.pricing.entity.CategoryBounds;
+import com.ecommerce.pricing.repository.ApprovedDecisionRepository;
+import com.ecommerce.pricing.repository.CategoryBoundsRepository;
+import com.ecommerce.order.repository.OrderRepository;
+import com.ecommerce.pricing.repository.PricingRequestRepository;
+import com.ecommerce.product.repository.ProductRepository;
+import com.ecommerce.user.repository.UserRepository;
+import com.ecommerce.pricing.service.RoutingService;
+import com.ecommerce.admin.dto.response.AdminProductResponse;
+import com.ecommerce.admin.dto.response.AdminRequestResponse;
+import com.ecommerce.admin.service.AdminService;
+import com.ecommerce.admin.dto.response.AdminStatsResponse;
+import com.ecommerce.admin.dto.request.ApproveRequest;
+import com.ecommerce.admin.dto.request.DeleteProductRequest;
+import com.ecommerce.admin.dto.request.OverrideRequest;
+import com.ecommerce.admin.dto.request.RejectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,9 +54,6 @@ public class AdminServiceImpl implements AdminService {
     private final RoutingService routingService;
     private final EmailService emailService;
     private final CategoryBoundsRepository categoryBoundsRepository;
-    private final CartItemRepository cartItemRepository;
-    private final SavedProductRepository savedProductRepository;
-    private final PricingHistoryRepository pricingHistoryRepository;
 
     @Override
     @Transactional(readOnly = true)

@@ -1,12 +1,12 @@
-package com.ecommerce.service.admin;
+package com.ecommerce.admin.service;
+import com.ecommerce.admin.dto.response.AdminProductResponse;
+import com.ecommerce.admin.dto.response.AdminRequestResponse;
+import com.ecommerce.admin.dto.response.AdminStatsResponse;
+import com.ecommerce.admin.dto.request.ApproveRequest;
+import com.ecommerce.admin.dto.request.DeleteProductRequest;
+import com.ecommerce.admin.dto.request.OverrideRequest;
+import com.ecommerce.admin.dto.request.RejectRequest;
 
-import com.ecommerce.dto.request.ApproveRequest;
-import com.ecommerce.dto.request.DeleteProductRequest;
-import com.ecommerce.dto.request.OverrideRequest;
-import com.ecommerce.dto.request.RejectRequest;
-import com.ecommerce.dto.response.AdminProductResponse;
-import com.ecommerce.dto.response.AdminRequestResponse;
-import com.ecommerce.dto.response.AdminStatsResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
