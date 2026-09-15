@@ -1,7 +1,7 @@
-package com.ecommerce.controller;
+package com.ecommerce.user.controller;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.user.service.UserService;
 
-import com.ecommerce.entity.User;
-import com.ecommerce.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

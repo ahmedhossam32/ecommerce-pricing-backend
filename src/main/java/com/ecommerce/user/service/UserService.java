@@ -1,6 +1,6 @@
-package com.ecommerce.service.user;
+package com.ecommerce.user.service;
+import com.ecommerce.user.entity.User;
 
-import com.ecommerce.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {

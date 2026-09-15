@@ -1,8 +1,9 @@
-package com.ecommerce.service.user;
+package com.ecommerce.user.service.impl;
 
-import com.ecommerce.entity.User;
-import com.ecommerce.repository.UserRepository;
-import com.ecommerce.service.upload.CloudinaryService;
+import com.ecommerce.common.upload.CloudinaryService;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.user.repository.UserRepository;
+import com.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
