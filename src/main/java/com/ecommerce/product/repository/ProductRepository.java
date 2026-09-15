@@ -1,8 +1,8 @@
-package com.ecommerce.repository;
+package com.ecommerce.product.repository;
 
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.User;
-import com.ecommerce.enums.ProductStatus;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,16 +13,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findBySeller(User seller);
     List<Product> findBySellerAndStatusNot(User seller, ProductStatus status);
     Optional<Product> findByIdAndSeller(Long id, User seller);
     long countByStatus(ProductStatus status);
     List<Product> findByStatus(ProductStatus status);
-    List<Product> findAllByOrderByCreatedAtDesc();
-    List<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status);
     Page<Product> findByStatus(ProductStatus status, Pageable pageable);
-    Page<Product> findAllByOrderByCreatedAtDesc(Pageable pageable);
-    Page<Product> findByStatusOrderByCreatedAtDesc(ProductStatus status, Pageable pageable);
 
     @Query(value = "SELECT p FROM Product p JOIN FETCH p.seller ORDER BY p.createdAt DESC",
            countQuery = "SELECT COUNT(p) FROM Product p")
@@ -34,6 +29,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByStatusOrderByCreatedAtDescWithSeller(
             @Param("status") ProductStatus status, Pageable pageable);
 
-    @Query("SELECT COALESCE(SUM(o.priceAtPurchase), 0) FROM Order o WHERE o.product.seller = :seller")
-    Double calculateRevenueForSeller(@Param("seller") User seller);
+
 }

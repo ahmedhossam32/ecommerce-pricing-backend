@@ -1,16 +1,16 @@
-package com.ecommerce.controller;
+package com.ecommerce.product.controller;
 
-import com.ecommerce.dto.request.AcceptPriceRequest;
-import com.ecommerce.dto.request.DisputePriceRequest;
-import com.ecommerce.dto.request.ProductListingRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import com.ecommerce.dto.response.AcceptPriceResponse;
-import com.ecommerce.dto.response.DisputeResponse;
-import com.ecommerce.dto.response.ProductResponse;
-import com.ecommerce.dto.response.PricingSuggestionResponse;
-import com.ecommerce.dto.response.SellerDashboardResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.service.product.ProductService;
+import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.product.dto.request.AcceptPriceRequest;
+import com.ecommerce.product.dto.response.AcceptPriceResponse;
+import com.ecommerce.product.dto.request.DisputePriceRequest;
+import com.ecommerce.product.dto.response.DisputeResponse;
+import com.ecommerce.product.dto.request.ProductListingRequest;
+import com.ecommerce.product.dto.response.ProductResponse;
+import com.ecommerce.product.service.ProductService;
+import com.ecommerce.product.dto.response.SellerDashboardResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

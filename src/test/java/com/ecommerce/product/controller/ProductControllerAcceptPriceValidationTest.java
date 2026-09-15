@@ -1,10 +1,10 @@
-package com.ecommerce.controller;
+package com.ecommerce.product.controller;
 
-import com.ecommerce.dto.response.AcceptPriceResponse;
-import com.ecommerce.entity.User;
-import com.ecommerce.enums.Role;
-import com.ecommerce.exception.GlobalExceptionHandler;
-import com.ecommerce.service.product.ProductService;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.common.enums.Role;
+import com.ecommerce.common.exception.GlobalExceptionHandler;
+import com.ecommerce.product.dto.response.AcceptPriceResponse;
+import com.ecommerce.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,14 +1,14 @@
-package com.ecommerce.service.product;
+package com.ecommerce.product.service.impl;
 
-import com.ecommerce.dto.request.ProductListingRequest;
-import com.ecommerce.dto.response.PricingSuggestionResponse;
-import com.ecommerce.entity.PricingRequest;
-import com.ecommerce.entity.Product;
-import com.ecommerce.entity.User;
-import com.ecommerce.enums.PricingRequestStatus;
-import com.ecommerce.enums.ProductStatus;
-import com.ecommerce.repository.PricingRequestRepository;
-import com.ecommerce.repository.ProductRepository;
+import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;
+import com.ecommerce.pricing.entity.PricingRequest;
+import com.ecommerce.user.entity.User;
+import com.ecommerce.common.enums.PricingRequestStatus;
+import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.pricing.repository.PricingRequestRepository;
+import com.ecommerce.product.entity.Product;
+import com.ecommerce.product.dto.request.ProductListingRequest;
+import com.ecommerce.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
