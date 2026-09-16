@@ -15,7 +15,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     @Query("SELECT ci FROM CartItem ci " +
            "JOIN FETCH ci.product p " +
            "JOIN FETCH p.seller " +
-           "WHERE ci.buyer = :buyer")
+           "WHERE ci.buyer = :buyer AND p.status <> com.ecommerce.common.enums.ProductStatus.DELETED")
     List<CartItem> findByBuyerWithProductAndSeller(@Param("buyer") User buyer);
     Optional<CartItem> findByBuyerAndProduct(User buyer, Product product);
     void deleteByBuyerAndProduct(User buyer, Product product);

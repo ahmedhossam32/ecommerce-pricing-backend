@@ -48,7 +48,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     @Transactional(readOnly = true)
     public List<SavedProductResponse> getSaved(User buyer) {
-        return savedProductRepository.findByBuyer(buyer)
+        return savedProductRepository.findByBuyerAndProduct_StatusNot(buyer, ProductStatus.DELETED)
                 .stream()
                 .map(this::toResponse)
                 .toList();
