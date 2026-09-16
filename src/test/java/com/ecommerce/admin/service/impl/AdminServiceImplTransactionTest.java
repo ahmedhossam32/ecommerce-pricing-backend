@@ -14,6 +14,8 @@ import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.pricing.service.RoutingService;
 import com.ecommerce.admin.dto.request.ApproveRequest;
 import com.ecommerce.admin.dto.request.OverrideRequest;
+import com.ecommerce.admin.dto.request.RejectRequest;
+import com.ecommerce.admin.mapper.AdminMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,7 +60,7 @@ import static org.mockito.Mockito.when;
  * be the real, outermost commit/rollback boundary.
  */
 @DataJpaTest
-@Import(AdminServiceImpl.class)
+@Import({AdminServiceImpl.class, AdminMapper.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @DisplayName("AdminServiceImpl — transaction boundary fix (behavioral verification)")
 class AdminServiceImplTransactionTest {
@@ -96,10 +98,14 @@ class AdminServiceImplTransactionTest {
     }
 
     private PricingRequest persistPricingRequest(Product product, double suggestedPrice) {
+        return persistPricingRequest(product, suggestedPrice, PricingRequestStatus.PENDING);
+    }
+
+    private PricingRequest persistPricingRequest(Product product, double suggestedPrice, PricingRequestStatus status) {
         return pricingRequestRepository.save(PricingRequest.builder()
                 .product(product)
                 .suggestedPrice(BigDecimal.valueOf(suggestedPrice))
-                .status(PricingRequestStatus.PENDING)
+                .status(status)
                 .brand("Sony")
                 .condition("NEW")
                 .build());
@@ -243,5 +249,93 @@ class AdminServiceImplTransactionTest {
         // Email is a separate side effect from the cache write and must still fire.
         verify(emailService, times(1))
                 .sendApprovalEmail(anyString(), anyString(), anyString(), anyDouble(), any());
+    }
+
+    // ── Test 5 — defensive PricingRequest.status guard: approve ─────────────
+    @Test
+    @DisplayName("Test 5: approveRequest rejects a request whose PricingRequest.status isn't PENDING, "
+            + "even though Product.status is still PENDING_REVIEW")
+    void approveRequest_rejectsWhenPricingRequestNotPending() {
+        Product product = persistProduct(ProductStatus.PENDING_REVIEW, null);
+        // Simulates the inconsistent state the guard defends against: the request has
+        // already been finalized (APPROVED) but the product's own status was left at
+        // PENDING_REVIEW — the guard on Product.status alone would let this through.
+        PricingRequest pr = persistPricingRequest(product, 500.0, PricingRequestStatus.APPROVED);
+
+        ApproveRequest request = new ApproveRequest();
+        request.setApprovedPrice(500.0);
+        request.setAdminNote("re-approval attempt");
+
+        assertThatThrownBy(() -> adminService.approveRequest(pr.getId(), request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Pricing request is not pending");
+
+        verify(routingService, never()).cacheApprovedRange(any(), any(), anyDouble(), any());
+        verify(emailService, never()).sendApprovalEmail(any(), any(), any(), anyDouble(), any());
+    }
+
+    // ── Test 6 — defensive PricingRequest.status guard: reject ──────────────
+    @Test
+    @DisplayName("Test 6: rejectRequest rejects a request whose PricingRequest.status isn't PENDING, "
+            + "even though Product.status is still PENDING_REVIEW")
+    void rejectRequest_rejectsWhenPricingRequestNotPending() {
+        Product product = persistProduct(ProductStatus.PENDING_REVIEW, null);
+        PricingRequest pr = persistPricingRequest(product, 500.0, PricingRequestStatus.REJECTED);
+
+        RejectRequest request = new RejectRequest();
+        request.setRejectionReason("duplicate rejection attempt");
+
+        assertThatThrownBy(() -> adminService.rejectRequest(pr.getId(), request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Pricing request is not pending");
+
+        verify(emailService, never())
+                .sendRejectionEmail(any(), any(), any(), any(), anyDouble(), anyDouble());
+    }
+
+    // ── Test 7 — override guard: no PricingRequest at all ────────────────────
+    @Test
+    @DisplayName("Test 7: overridePrice rejects when no PricingRequest exists for the product, "
+            + "even though Product.status is LIVE")
+    void overridePrice_rejectsWhenNoPricingRequestExists() {
+        Product product = persistProduct(ProductStatus.LIVE, BigDecimal.valueOf(300.0));
+        // No PricingRequest persisted for this product at all.
+
+        OverrideRequest request = new OverrideRequest();
+        request.setNewPrice(450.0);
+        request.setAdminNote("override with no backing request");
+
+        assertThatThrownBy(() -> adminService.overridePrice(product.getId(), request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No pricing request found");
+
+        entityManager.clear();
+        Product reloaded = productRepository.findById(product.getId()).orElseThrow();
+        assertThat(reloaded.getPrice())
+                .as("Price must not have changed when the guard rejects the override")
+                .isEqualByComparingTo(BigDecimal.valueOf(300.0));
+    }
+
+    // ── Test 8 — override guard: latest PricingRequest isn't APPROVED ────────
+    @Test
+    @DisplayName("Test 8: overridePrice rejects when the latest PricingRequest for the product "
+            + "isn't APPROVED, even though Product.status is LIVE")
+    void overridePrice_rejectsWhenLatestPricingRequestNotApproved() {
+        Product product = persistProduct(ProductStatus.LIVE, BigDecimal.valueOf(300.0));
+        persistPricingRequest(product, 300.0, PricingRequestStatus.PENDING);
+
+        OverrideRequest request = new OverrideRequest();
+        request.setNewPrice(450.0);
+        request.setAdminNote("override backed by an unapproved request");
+
+        assertThatThrownBy(() -> adminService.overridePrice(product.getId(), request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("approved pricing request");
+
+        entityManager.clear();
+        Product reloaded = productRepository.findById(product.getId()).orElseThrow();
+        assertThat(reloaded.getPrice())
+                .as("Price must not have changed when the guard rejects the override")
+                .isEqualByComparingTo(BigDecimal.valueOf(300.0));
     }
 }

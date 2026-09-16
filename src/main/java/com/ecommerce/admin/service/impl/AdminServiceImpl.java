@@ -2,6 +2,7 @@ package com.ecommerce.admin.service.impl;
 
 import com.ecommerce.common.service.EmailService;
 import com.ecommerce.pricing.entity.ApprovedDecision;
+import com.ecommerce.pricing.entity.CategoryBounds;
 import com.ecommerce.pricing.entity.PricingRequest;
 import com.ecommerce.product.entity.Product;
 import com.ecommerce.user.entity.User;
@@ -9,7 +10,6 @@ import com.ecommerce.common.enums.PricingRequestStatus;
 import com.ecommerce.common.enums.ProductStatus;
 import com.ecommerce.common.enums.Role;
 import com.ecommerce.common.exception.ResourceNotFoundException;
-import com.ecommerce.pricing.entity.CategoryBounds;
 import com.ecommerce.pricing.repository.ApprovedDecisionRepository;
 import com.ecommerce.pricing.repository.CategoryBoundsRepository;
 import com.ecommerce.order.repository.OrderRepository;
@@ -19,6 +19,7 @@ import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.pricing.service.RoutingService;
 import com.ecommerce.admin.dto.response.AdminProductResponse;
 import com.ecommerce.admin.dto.response.AdminRequestResponse;
+import com.ecommerce.admin.mapper.AdminMapper;
 import com.ecommerce.admin.service.AdminService;
 import com.ecommerce.admin.dto.response.AdminStatsResponse;
 import com.ecommerce.admin.dto.request.ApproveRequest;
@@ -38,7 +39,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,14 +55,26 @@ public class AdminServiceImpl implements AdminService {
     private final RoutingService routingService;
     private final EmailService emailService;
     private final CategoryBoundsRepository categoryBoundsRepository;
+    private final AdminMapper adminMapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<AdminRequestResponse> getPendingRequests() {
-        return pricingRequestRepository
-                .findByStatusAndProduct_Status(PricingRequestStatus.PENDING, ProductStatus.PENDING_REVIEW)
+        List<PricingRequest> pendingRequests = pricingRequestRepository
+                .findByStatusAndProductStatusWithProductAndSeller(
+                        PricingRequestStatus.PENDING, ProductStatus.PENDING_REVIEW);
+
+        Set<String> categories = pendingRequests.stream()
+                .map(pr -> pr.getProduct().getCategory())
+                .collect(Collectors.toSet());
+
+        Map<String, CategoryBounds> boundsByCategory = categoryBoundsRepository
+                .findByCategoryIn(categories)
                 .stream()
-                .map(this::toAdminResponse)
+                .collect(Collectors.toMap(CategoryBounds::getCategory, b -> b));
+
+        return pendingRequests.stream()
+                .map(pr -> adminMapper.toAdminResponse(pr, boundsByCategory.get(pr.getProduct().getCategory())))
                 .toList();
     }
 
@@ -70,21 +83,12 @@ public class AdminServiceImpl implements AdminService {
     public Map<String, String> approveRequest(Long requestId, ApproveRequest request) {
         ApprovalData data = doApproveTransaction(requestId, request);
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                try {
-                    routingService.cacheApprovedRange(
-                            data.brand(), data.category(), data.approvedPrice(), data.condition());
-                } catch (Exception e) {
-                    log.warn("Failed to update pricing cache after approving request {}: {}",
-                            requestId, e.getMessage());
-                }
-                emailService.sendApprovalEmail(
+        registerCacheAndEmailAfterCommit(
+                () -> routingService.cacheApprovedRange(
+                        data.brand(), data.category(), data.approvedPrice(), data.condition()),
+                () -> emailService.sendApprovalEmail(
                         data.sellerEmail(), data.sellerName(),
-                        data.productName(), data.approvedPrice(), data.adminNote());
-            }
-        });
+                        data.productName(), data.approvedPrice(), data.adminNote()));
 
         return data.response();
     }
@@ -94,14 +98,9 @@ public class AdminServiceImpl implements AdminService {
     public Map<String, String> rejectRequest(Long requestId, RejectRequest request) {
         RejectionData data = doRejectTransaction(requestId, request);
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                emailService.sendRejectionEmail(
-                        data.sellerEmail(), data.sellerName(),
-                        data.productName(), data.rejectionReason(), data.minRange(), data.maxRange());
-            }
-        });
+        registerEmailAfterCommit(() -> emailService.sendRejectionEmail(
+                data.sellerEmail(), data.sellerName(),
+                data.productName(), data.rejectionReason(), data.minRange(), data.maxRange()));
 
         return data.response();
     }
@@ -111,23 +110,37 @@ public class AdminServiceImpl implements AdminService {
     public Map<String, String> overridePrice(Long productId, OverrideRequest request) {
         OverrideData data = doOverrideTransaction(productId, request);
 
+        registerCacheAndEmailAfterCommit(
+                () -> routingService.cacheApprovedRange(
+                        data.brand(), data.category(), data.newPrice(), data.condition()),
+                () -> emailService.sendOverrideEmail(
+                        data.sellerEmail(), data.sellerName(),
+                        data.productName(), data.oldPrice(), data.newPrice(), data.adminNote()));
+
+        return data.response();
+    }
+
+    private void registerCacheAndEmailAfterCommit(Runnable cacheUpdate, Runnable emailSend) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 try {
-                    routingService.cacheApprovedRange(
-                            data.brand(), data.category(), data.newPrice(), data.condition());
+                    cacheUpdate.run();
                 } catch (Exception e) {
-                    log.warn("Failed to update pricing cache after overriding product {}: {}",
-                            productId, e.getMessage());
+                    log.warn("Failed to update pricing cache after commit: {}", e.getMessage());
                 }
-                emailService.sendOverrideEmail(
-                        data.sellerEmail(), data.sellerName(),
-                        data.productName(), data.oldPrice(), data.newPrice(), data.adminNote());
+                emailSend.run();
             }
         });
+    }
 
-        return data.response();
+    private void registerEmailAfterCommit(Runnable emailSend) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                emailSend.run();
+            }
+        });
     }
 
     @Override
@@ -135,15 +148,14 @@ public class AdminServiceImpl implements AdminService {
     public AdminRequestResponse getRequestById(Long requestId) {
         PricingRequest pr = pricingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pricing request not found: " + requestId));
-        return toAdminResponse(pr);
+        return adminMapper.toAdminResponse(pr);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<AdminProductResponse> getAllProducts(String status, Pageable pageable) {
         Page<Product> products = (status != null && !status.isBlank())
-                ? productRepository.findByStatusOrderByCreatedAtDescWithSeller(
-                    ProductStatus.valueOf(status.toUpperCase()), pageable)
+                ? productRepository.findByStatusOrderByCreatedAtDescWithSeller(parseProductStatus(status), pageable)
                 : productRepository.findAllByOrderByCreatedAtDescWithSeller(pageable);
 
         List<Product> productList = products.getContent();
@@ -158,7 +170,15 @@ public class AdminServiceImpl implements AdminService {
                 ));
 
         return products.map(product ->
-                toAdminProductResponse(product, latestRequestByProductId.get(product.getId())));
+                adminMapper.toAdminProductResponse(product, latestRequestByProductId.get(product.getId())));
+    }
+
+    private ProductStatus parseProductStatus(String status) {
+        try {
+            return ProductStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid product status: " + status);
+        }
     }
 
     @Override
@@ -183,6 +203,9 @@ public class AdminServiceImpl implements AdminService {
         Product product = pr.getProduct();
         if (product.getStatus() != ProductStatus.PENDING_REVIEW) {
             throw new IllegalStateException("Product is not pending admin review");
+        }
+        if (pr.getStatus() != PricingRequestStatus.PENDING) {
+            throw new IllegalStateException("Pricing request is not pending");
         }
         User seller = product.getSeller();
         double approvedPrice = request.getApprovedPrice();
@@ -219,6 +242,9 @@ public class AdminServiceImpl implements AdminService {
         if (product.getStatus() != ProductStatus.PENDING_REVIEW) {
             throw new IllegalStateException("Product is not pending review and cannot be rejected");
         }
+        if (pr.getStatus() != PricingRequestStatus.PENDING) {
+            throw new IllegalStateException("Pricing request is not pending");
+        }
         User seller = product.getSeller();
 
         double suggested = pr.getSuggestedPrice().doubleValue();
@@ -244,6 +270,14 @@ public class AdminServiceImpl implements AdminService {
         if (product.getStatus() != ProductStatus.LIVE) {
             throw new IllegalStateException("Only LIVE products can have their price overridden");
         }
+
+        PricingRequest latestRequest = pricingRequestRepository
+                .findTopByProductOrderByCreatedAtDesc(product)
+                .orElseThrow(() -> new IllegalStateException("No pricing request found for this product"));
+        if (latestRequest.getStatus() != PricingRequestStatus.APPROVED) {
+            throw new IllegalStateException("Only products with an approved pricing request can be overridden");
+        }
+
         double oldPrice = product.getPrice() != null
                 ? product.getPrice().doubleValue() : 0.0;
         double newPrice = request.getNewPrice();
@@ -253,8 +287,7 @@ public class AdminServiceImpl implements AdminService {
         product.setPrice(BigDecimal.valueOf(newPrice));
         productRepository.save(product);
 
-        String condition = pricingRequestRepository.findTopByProductOrderByCreatedAtDesc(product)
-                .map(PricingRequest::getCondition).orElse(null);
+        String condition = latestRequest.getCondition();
 
         return new OverrideData(
                 seller.getEmail(), seller.getName(), product.getName(),
@@ -264,79 +297,6 @@ public class AdminServiceImpl implements AdminService {
                         "message", "Price overridden, cache updated and seller notified.",
                         "oldPrice", String.valueOf(oldPrice),
                         "newPrice", String.valueOf(newPrice)));
-    }
-
-    private AdminProductResponse toAdminProductResponse(Product product, PricingRequest latestPrRaw) {
-        User seller = product.getSeller();
-        Optional<PricingRequest> latestPr = Optional.ofNullable(latestPrRaw);
-
-        Double suggestedPrice = latestPr
-                .map(pr -> pr.getSuggestedPrice() != null ? pr.getSuggestedPrice().doubleValue() : null)
-                .orElse(null);
-
-        Long requestId = latestPr
-                .map(pr -> pr.getStatus() == PricingRequestStatus.PENDING ? pr.getId() : null)
-                .orElse(null);
-
-        return AdminProductResponse.builder()
-                .requestId(requestId)
-                .productId(product.getId())
-                .productName(product.getName())
-                .category(product.getCategory())
-                .brand(product.getBrand())
-                .condition(latestPr.map(pr -> pr.getCondition()).orElse(null))
-                .conditionGrade(latestPr.map(pr -> pr.getConditionGrade()).orElse(null))
-                .status(product.getStatus().name())
-                .price(product.getPrice() != null ? product.getPrice().doubleValue() : null)
-                .suggestedPrice(suggestedPrice)
-                .sellerName(seller.getName())
-                .sellerEmail(seller.getEmail())
-                .sellerProfilePictureUrl(seller.getProfilePictureUrl())
-                .createdAt(product.getCreatedAt())
-                .imageUrls(product.getImageUrls() != null ? product.getImageUrls() : List.of())
-                .build();
-    }
-
-    private AdminRequestResponse toAdminResponse(PricingRequest pr) {
-        Product product = pr.getProduct();
-        User seller = product.getSeller();
-
-        String routingReason = "LOW_CONFIDENCE";
-        Optional<CategoryBounds> bounds = categoryBoundsRepository.findByCategory(product.getCategory());
-        if (bounds.isPresent()) {
-            BigDecimal suggested = pr.getSuggestedPrice();
-            if (suggested != null &&
-                (suggested.compareTo(bounds.get().getMinPrice()) < 0 ||
-                 suggested.compareTo(bounds.get().getMaxPrice()) > 0)) {
-                routingReason = "OUTSIDE_BOUNDS";
-            }
-        }
-
-        return AdminRequestResponse.builder()
-                .requestId(pr.getId())
-                .productId(product.getId())
-                .productName(product.getName())
-                .category(product.getCategory())
-                .brand(pr.getBrand())
-                .sellerName(seller.getName())
-                .sellerEmail(seller.getEmail())
-                .suggestedPrice(pr.getSuggestedPrice() != null ? pr.getSuggestedPrice().doubleValue() : null)
-                .sellerPrice(pr.getSellerPrice() != null ? pr.getSellerPrice().doubleValue() : null)
-                .sellerReasoning(pr.getSellerReasoning())
-                .marketPriceMin(pr.getMarketPriceMin() != null ? pr.getMarketPriceMin().doubleValue() : null)
-                .marketPriceMax(pr.getMarketPriceMax() != null ? pr.getMarketPriceMax().doubleValue() : null)
-                .llmConfidence(pr.getLlmConfidence())
-                .mlBaselinePrice(pr.getMlBaselinePrice() != null ? pr.getMlBaselinePrice().doubleValue() : null)
-                .createdAt(pr.getCreatedAt())
-                .requestType(pr.getSellerReasoning() != null && pr.getSellerPrice() != null ? "DISPUTE" : "NEW_LISTING")
-                .routingReason(routingReason)
-                .condition(pr.getCondition())
-                .conditionNotes(pr.getConditionNotes())
-                .conditionGrade(pr.getConditionGrade())
-                .reasoning(pr.getReasoning())
-                .imageUrls(product.getImageUrls())
-                .sellerProfilePictureUrl(seller.getProfilePictureUrl())
-                .build();
     }
 
     @Override
@@ -364,39 +324,4 @@ public class AdminServiceImpl implements AdminService {
     private double round(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
-
-    private record ApprovalData(
-            String sellerEmail,
-            String sellerName,
-            String productName,
-            double approvedPrice,
-            String adminNote,
-            String brand,
-            String category,
-            String condition,
-            Map<String, String> response
-    ) {}
-
-    private record RejectionData(
-            String sellerEmail,
-            String sellerName,
-            String productName,
-            String rejectionReason,
-            double minRange,
-            double maxRange,
-            Map<String, String> response
-    ) {}
-
-    private record OverrideData(
-            String sellerEmail,
-            String sellerName,
-            String productName,
-            double oldPrice,
-            double newPrice,
-            String adminNote,
-            String brand,
-            String category,
-            String condition,
-            Map<String, String> response
-    ) {}
 }
