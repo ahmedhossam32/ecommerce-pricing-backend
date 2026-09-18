@@ -1,6 +1,7 @@
 package com.ecommerce.common.config;
 
 import com.ecommerce.common.filter.JwtAuthFilter;
+import com.ecommerce.common.filter.RateLimitingFilter;
 import com.ecommerce.common.security.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

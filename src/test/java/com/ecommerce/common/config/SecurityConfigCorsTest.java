@@ -5,6 +5,7 @@ import com.ecommerce.auth.service.JwtService;
 import com.ecommerce.auth.service.impl.JwtServiceImpl;
 import com.ecommerce.buyer.controller.BuyerController;
 import com.ecommerce.common.filter.JwtAuthFilter;
+import com.ecommerce.common.filter.RateLimitingFilter;
 import com.ecommerce.common.security.CustomAuthenticationEntryPoint;
 import com.ecommerce.pricing.controller.PricingController;
 import com.ecommerce.pricing.dto.response.PricingSuggestionResponse;

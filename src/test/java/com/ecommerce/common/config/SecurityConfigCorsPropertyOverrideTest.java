@@ -4,6 +4,7 @@ import com.ecommerce.auth.service.impl.JwtServiceImpl;
 import com.ecommerce.buyer.controller.BuyerController;
 import com.ecommerce.buyer.service.BuyerService;
 import com.ecommerce.common.filter.JwtAuthFilter;
+import com.ecommerce.common.filter.RateLimitingFilter;
 import com.ecommerce.common.security.CustomAuthenticationEntryPoint;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

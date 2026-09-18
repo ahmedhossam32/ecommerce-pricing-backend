@@ -1,4 +1,4 @@
-package com.ecommerce.common.config;
+package com.ecommerce.common.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
