@@ -1,5 +1,6 @@
 package com.ecommerce.buyer.service.impl;
 
+import com.ecommerce.buyer.mapper.BuyerMapper;
 import com.ecommerce.order.entity.Order;
 import com.ecommerce.pricing.entity.PricingRequest;
 import com.ecommerce.product.entity.Product;
@@ -8,6 +9,7 @@ import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.common.service.EmailService;
+import com.ecommerce.user.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import com.ecommerce.pricing.repository.PricingRequestRepository;
 import com.ecommerce.product.repository.ProductRepository;
@@ -34,21 +36,14 @@ public class BuyerServiceImpl implements BuyerService {
     private final PricingRequestRepository pricingRequestRepository;
     private final OrderRepository orderRepository;
     private final EmailService emailService;
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<BuyerProductResponse> getAllLiveProducts() {
-        return productRepository.findByStatus(ProductStatus.LIVE)
-                .stream()
-                .map(this::toSummaryResponse)
-                .toList();
-    }
+    private final UserRepository userRepository;
+    private final BuyerMapper buyerMapper;
 
     @Override
     @Transactional(readOnly = true)
     public Page<BuyerProductResponse> getAllLiveProducts(Pageable pageable) {
-        return productRepository.findByStatus(ProductStatus.LIVE, pageable)
-                .map(this::toSummaryResponse);
+        return productRepository.findByStatusWithSeller(ProductStatus.LIVE, pageable)
+                .map(buyerMapper::toSummaryResponse);
     }
 
     @Override
@@ -59,7 +54,7 @@ public class BuyerServiceImpl implements BuyerService {
         if (product.getStatus() != ProductStatus.LIVE) {
             throw new ResourceNotFoundException("Product not found");
         }
-        return toDetailResponse(product);
+        return buyerMapper.toDetailResponse(product);
     }
 
     @Override
@@ -93,7 +88,10 @@ public class BuyerServiceImpl implements BuyerService {
 
     @Override
     @Transactional
-    public OrderResponse placeOrder(OrderRequest request, User buyer) {
+    public OrderResponse placeOrder(OrderRequest request, Long buyerId) {
+        User buyer = userRepository.findById(buyerId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -119,121 +117,29 @@ public class BuyerServiceImpl implements BuyerService {
                 order.getPriceAtPurchase().doubleValue()
         );
 
-        return OrderResponse.builder()
-                .orderId(order.getId())
-                .productId(product.getId())
-                .productName(product.getName())
-                .price(product.getPrice().doubleValue())
-                .buyerName(buyer.getName())
-                .sellerName(product.getSeller().getName())
-                .createdAt(order.getCreatedAt())
-                .message("Order placed successfully!")
-                .imageUrls(product.getImageUrls())
-                .category(product.getCategory())
-                .brand(product.getBrand())
-                .sellerProfilePictureUrl(
-                    product.getSeller().getProfilePictureUrl() != null
-                        ? product.getSeller().getProfilePictureUrl()
-                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
-                )
-                .build();
+        return buyerMapper.toOrderResponse(order, "Order placed successfully!");
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getMyOrders(User buyer) {
-        return orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyer.getId())
+    public List<OrderResponse> getMyOrders(Long buyerId) {
+        return orderRepository.findByBuyerIdWithProductAndSellerOrderByCreatedAtDesc(buyerId)
                 .stream()
-                .map(o -> OrderResponse.builder()
-                        .orderId(o.getId())
-                        .productId(o.getProduct().getId())
-                        .productName(o.getProduct().getName())
-                        .price(o.getPriceAtPurchase().doubleValue())
-                        .buyerName(o.getBuyer().getName())
-                        .sellerName(o.getProduct().getSeller().getName())
-                        .createdAt(o.getCreatedAt())
-                        .message("Order placed successfully!")
-                        .imageUrls(o.getProduct().getImageUrls())
-                        .category(o.getProduct().getCategory())
-                        .brand(o.getProduct().getBrand())
-                        .sellerProfilePictureUrl(
-                            o.getProduct().getSeller().getProfilePictureUrl() != null
-                                ? o.getProduct().getSeller().getProfilePictureUrl()
-                                : "https://res.cloudinary.com/demo/image/upload/avatar.png"
-                        )
-                        .build())
+                .map(o -> buyerMapper.toOrderResponse(o, "Order placed successfully!"))
                 .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getOrderById(Long orderId, User buyer) {
+    public OrderResponse getOrderById(Long orderId, Long buyerId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        if (!order.getBuyer().getId().equals(buyer.getId())) {
+        if (!order.getBuyer().getId().equals(buyerId)) {
             throw new AccessDeniedException("You are not authorized to view this order");
         }
 
-        return OrderResponse.builder()
-                .orderId(order.getId())
-                .productId(order.getProduct().getId())
-                .productName(order.getProduct().getName())
-                .price(order.getPriceAtPurchase().doubleValue())
-                .buyerName(order.getBuyer().getName())
-                .sellerName(order.getProduct().getSeller().getName())
-                .createdAt(order.getCreatedAt())
-                .message("Order placed successfully!")
-                .imageUrls(order.getProduct().getImageUrls())
-                .category(order.getProduct().getCategory())
-                .brand(order.getProduct().getBrand())
-                .sellerProfilePictureUrl(
-                    order.getProduct().getSeller().getProfilePictureUrl() != null
-                        ? order.getProduct().getSeller().getProfilePictureUrl()
-                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
-                )
-                .build();
-    }
-
-    private BuyerProductResponse toSummaryResponse(Product p) {
-        return BuyerProductResponse.builder()
-                .productId(p.getId())
-                .name(p.getName())
-                .description(p.getDescription())
-                .category(p.getCategory())
-                .brand(p.getBrand())
-                .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
-                .sellerName(p.getSeller().getName())
-                .weight(p.getWeight())
-                .createdAt(p.getCreatedAt())
-                .imageUrls(p.getImageUrls())
-                .sellerProfilePictureUrl(
-                    p.getSeller().getProfilePictureUrl() != null
-                        ? p.getSeller().getProfilePictureUrl()
-                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
-                )
-                .build();
-    }
-
-    private BuyerProductResponse toDetailResponse(Product p) {
-        return BuyerProductResponse.builder()
-                .productId(p.getId())
-                .name(p.getName())
-                .description(p.getDescription())
-                .category(p.getCategory())
-                .brand(p.getBrand())
-                .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
-                .sellerName(p.getSeller().getName())
-                .weight(p.getWeight())
-                .photosQty(p.getPhotosQty())
-                .createdAt(p.getCreatedAt())
-                .imageUrls(p.getImageUrls())
-                .sellerProfilePictureUrl(
-                    p.getSeller().getProfilePictureUrl() != null
-                        ? p.getSeller().getProfilePictureUrl()
-                        : "https://res.cloudinary.com/demo/image/upload/avatar.png"
-                )
-                .build();
+        return buyerMapper.toOrderResponse(order, "Order placed successfully!");
     }
 
     private double resolvePrice(PricingRequest pr) {

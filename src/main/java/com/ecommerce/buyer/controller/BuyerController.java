@@ -1,16 +1,15 @@
 package com.ecommerce.buyer.controller;
 
-import com.ecommerce.user.entity.User;
 import com.ecommerce.buyer.dto.response.BuyerProductResponse;
 import com.ecommerce.buyer.service.BuyerService;
 import com.ecommerce.buyer.dto.request.OrderRequest;
 import com.ecommerce.buyer.dto.response.OrderResponse;
 import com.ecommerce.buyer.dto.response.PriceHistoryResponse;
+import com.ecommerce.common.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
@@ -27,11 +26,10 @@ public class BuyerController {
     private final BuyerService buyerService;
 
     @GetMapping("/api/buyer/products")
-    public ResponseEntity<Page<BuyerProductResponse>> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(buyerService.getAllLiveProducts(pageable));
+    public ResponseEntity<Page<BuyerProductResponse>> getAllProducts(Pageable pageable) {
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by("createdAt").descending());
+        return ResponseEntity.ok(buyerService.getAllLiveProducts(sortedPageable));
     }
 
     @GetMapping("/api/buyer/products/{id}")
@@ -46,24 +44,22 @@ public class BuyerController {
 
     @PostMapping("/api/orders")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<OrderResponse> placeOrder(
-            @Valid @RequestBody OrderRequest request,
-            @AuthenticationPrincipal User buyer) {
-        return ResponseEntity.ok(buyerService.placeOrder(request, buyer));
+    public ResponseEntity<OrderResponse> placeOrder(@Valid @RequestBody OrderRequest request) {
+        Long buyerId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(buyerService.placeOrder(request, buyerId));
     }
 
     @GetMapping("/api/orders/my")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<List<OrderResponse>> getMyOrders(
-            @AuthenticationPrincipal User buyer) {
-        return ResponseEntity.ok(buyerService.getMyOrders(buyer));
+    public ResponseEntity<List<OrderResponse>> getMyOrders() {
+        Long buyerId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(buyerService.getMyOrders(buyerId));
     }
 
     @GetMapping("/api/orders/{orderId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<OrderResponse> getOrderById(
-            @PathVariable Long orderId,
-            @AuthenticationPrincipal User buyer) {
-        return ResponseEntity.ok(buyerService.getOrderById(orderId, buyer));
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId) {
+        Long buyerId = SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(buyerService.getOrderById(orderId, buyerId));
     }
 }
