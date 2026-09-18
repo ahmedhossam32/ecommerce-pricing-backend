@@ -70,10 +70,10 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<AdminProductResponse>> getAllProducts(
             @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(adminService.getAllProducts(status, pageable));
+            Pageable pageable) {
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                Sort.by("createdAt").descending());
+        return ResponseEntity.ok(adminService.getAllProducts(status, sortedPageable));
     }
 
     @GetMapping("/stats")
