@@ -1,4 +1,4 @@
-package com.ecommerce.common.enums;
+package com.ecommerce.auth.enums;
 
 public enum AuthProvider {
     LOCAL, GOOGLE

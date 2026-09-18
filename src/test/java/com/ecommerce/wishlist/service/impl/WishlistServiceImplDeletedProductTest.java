@@ -1,6 +1,6 @@
 package com.ecommerce.wishlist.service.impl;
 
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.enums.Role;
 import com.ecommerce.product.entity.Product;
 import com.ecommerce.product.repository.ProductRepository;

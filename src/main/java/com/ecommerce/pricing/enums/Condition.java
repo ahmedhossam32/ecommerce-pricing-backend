@@ -1,4 +1,4 @@
-package com.ecommerce.common.enums;
+package com.ecommerce.pricing.enums;
 
 public enum Condition {
     NEW, USED, REFURBISHED, UNKNOWN;

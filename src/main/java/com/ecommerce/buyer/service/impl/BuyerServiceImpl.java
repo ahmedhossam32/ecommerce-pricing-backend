@@ -4,7 +4,7 @@ import com.ecommerce.order.entity.Order;
 import com.ecommerce.pricing.entity.PricingRequest;
 import com.ecommerce.product.entity.Product;
 import com.ecommerce.user.entity.User;
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.common.service.EmailService;

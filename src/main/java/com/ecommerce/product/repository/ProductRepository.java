@@ -1,7 +1,7 @@
 package com.ecommerce.product.repository;
 
 import com.ecommerce.user.entity.User;
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

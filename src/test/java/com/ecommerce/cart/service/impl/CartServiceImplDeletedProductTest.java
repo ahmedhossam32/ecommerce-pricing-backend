@@ -1,7 +1,7 @@
 package com.ecommerce.cart.service.impl;
 
 import com.ecommerce.cart.dto.response.CartResponse;
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.enums.Role;
 import com.ecommerce.product.entity.Product;
 import com.ecommerce.product.repository.ProductRepository;

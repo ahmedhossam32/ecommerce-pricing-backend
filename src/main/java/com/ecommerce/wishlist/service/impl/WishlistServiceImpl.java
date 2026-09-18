@@ -2,7 +2,7 @@ package com.ecommerce.wishlist.service.impl;
 
 import com.ecommerce.product.entity.Product;
 import com.ecommerce.user.entity.User;
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.wishlist.entity.SavedProduct;

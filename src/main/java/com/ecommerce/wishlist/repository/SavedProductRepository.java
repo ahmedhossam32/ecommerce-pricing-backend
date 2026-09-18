@@ -1,6 +1,6 @@
 package com.ecommerce.wishlist.repository;
 
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.product.entity.Product;
 import com.ecommerce.user.entity.User;
 import com.ecommerce.wishlist.entity.SavedProduct;

@@ -1,6 +1,6 @@
 package com.ecommerce.pricing.entity;
 
-import com.ecommerce.common.enums.PricingRequestStatus;
+import com.ecommerce.pricing.enums.PricingRequestStatus;
 import com.ecommerce.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;

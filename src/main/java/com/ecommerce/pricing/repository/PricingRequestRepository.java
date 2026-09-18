@@ -1,8 +1,8 @@
 package com.ecommerce.pricing.repository;
 
 import com.ecommerce.product.entity.Product;
-import com.ecommerce.common.enums.PricingRequestStatus;
-import com.ecommerce.common.enums.ProductStatus;
+import com.ecommerce.pricing.enums.PricingRequestStatus;
+import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.pricing.entity.PricingRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -2,7 +2,7 @@ package com.ecommerce.admin.mapper;
 
 import com.ecommerce.admin.dto.response.AdminProductResponse;
 import com.ecommerce.admin.dto.response.AdminRequestResponse;
-import com.ecommerce.common.enums.PricingRequestStatus;
+import com.ecommerce.pricing.enums.PricingRequestStatus;
 import com.ecommerce.pricing.entity.CategoryBounds;
 import com.ecommerce.pricing.entity.PricingRequest;
 import com.ecommerce.pricing.repository.CategoryBoundsRepository;

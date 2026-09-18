@@ -1,6 +1,6 @@
 package com.ecommerce.pricing.service.impl;
 
-import com.ecommerce.common.enums.Condition;
+import com.ecommerce.pricing.enums.Condition;
 import com.ecommerce.pricing.entity.CategoryBounds;
 import com.ecommerce.pricing.repository.CategoryBoundsRepository;
 import com.ecommerce.pricing.service.RoutingService;

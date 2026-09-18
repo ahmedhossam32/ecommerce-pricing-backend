@@ -1,6 +1,6 @@
 package com.ecommerce.user.entity;
 
-import com.ecommerce.common.enums.AuthProvider;
+import com.ecommerce.auth.enums.AuthProvider;
 import com.ecommerce.common.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
