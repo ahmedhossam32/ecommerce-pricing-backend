@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Slf4j
 @Service
@@ -82,8 +83,8 @@ public class EmailServiceImpl implements EmailService {
                 </table>
                 <p>Your product is now visible to buyers on DynaMart.</p>
                 <p style="color:#888;font-size:12px;">Best regards,<br/>The DynaMart Team</p>
-                """.formatted(sellerName, productName, approvedPrice,
-                adminNote != null ? adminNote : "No additional notes.");
+                """.formatted(HtmlUtils.htmlEscape(sellerName), HtmlUtils.htmlEscape(productName), approvedPrice,
+                adminNote != null ? HtmlUtils.htmlEscape(adminNote) : "No additional notes.");
 
         send(toEmail, "Your product has been approved! ✅", buildHtml("Product Approved", body));
     }
@@ -101,7 +102,8 @@ public class EmailServiceImpl implements EmailService {
                 </table>
                 <p>You can relist your product within the acceptable price range above.</p>
                 <p style="color:#888;font-size:12px;">Best regards,<br/>The DynaMart Team</p>
-                """.formatted(sellerName, productName, reason, minRange, maxRange);
+                """.formatted(HtmlUtils.htmlEscape(sellerName), HtmlUtils.htmlEscape(productName),
+                HtmlUtils.htmlEscape(reason), minRange, maxRange);
 
         send(toEmail, "Your product listing was not approved", buildHtml("Listing Not Approved", body));
     }
@@ -119,8 +121,8 @@ public class EmailServiceImpl implements EmailService {
                   <tr><td style="color:#666;">Admin Note</td><td>%s</td></tr>
                 </table>
                 <p style="color:#888;font-size:12px;">Best regards,<br/>The DynaMart Team</p>
-                """.formatted(sellerName, productName, oldPrice, newPrice,
-                adminNote != null ? adminNote : "No additional notes.");
+                """.formatted(HtmlUtils.htmlEscape(sellerName), HtmlUtils.htmlEscape(productName), oldPrice, newPrice,
+                adminNote != null ? HtmlUtils.htmlEscape(adminNote) : "No additional notes.");
 
         send(toEmail, "Your product price has been updated", buildHtml("Price Updated", body));
     }
@@ -137,7 +139,7 @@ public class EmailServiceImpl implements EmailService {
                 </table>
                 <p>Thank you for shopping with DynaMart!</p>
                 <p style="color:#888;font-size:12px;">Best regards,<br/>The DynaMart Team</p>
-                """.formatted(buyerName, productName, price);
+                """.formatted(HtmlUtils.htmlEscape(buyerName), HtmlUtils.htmlEscape(productName), price);
 
         send(toEmail, "Order confirmed — " + productName, buildHtml("Order Confirmed! 🎉", body));
     }
@@ -146,7 +148,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendProductDeletedEmail(String toEmail, String sellerName,
                                         String productName, String reason) {
         String reasonSection = reason != null
-                ? "<tr><td style=\"color:#666;width:40%;\">Reason</td><td>" + reason + "</td></tr>"
+                ? "<tr><td style=\"color:#666;width:40%;\">Reason</td><td>" + HtmlUtils.htmlEscape(reason) + "</td></tr>"
                 : "<tr><td style=\"color:#666;width:40%;\">Reason</td><td>No specific reason was provided.</td></tr>";
 
         String body = """
@@ -158,7 +160,7 @@ public class EmailServiceImpl implements EmailService {
                 </table>
                 <p>If you have questions, please contact our support team.</p>
                 <p style="color:#888;font-size:12px;">Best regards,<br/>The DynaMart Team</p>
-                """.formatted(sellerName, productName, reasonSection);
+                """.formatted(HtmlUtils.htmlEscape(sellerName), HtmlUtils.htmlEscape(productName), reasonSection);
 
         send(toEmail, "Your product listing has been removed — DynaMart",
                 buildHtml("Product Listing Removed", body));
