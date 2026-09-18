@@ -1,6 +1,7 @@
 package com.ecommerce.cart.service.impl;
 
 import com.ecommerce.cart.dto.response.CartResponse;
+import com.ecommerce.cart.mapper.CartMapper;
 import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.enums.Role;
 import com.ecommerce.product.entity.Product;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * CartItem row itself being destroyed.
  */
 @DataJpaTest
-@Import(CartServiceImpl.class)
+@Import({CartServiceImpl.class, CartMapper.class})
 @DisplayName("CartServiceImpl — soft-deleted products are hidden from the cart")
 class CartServiceImplDeletedProductTest {
 

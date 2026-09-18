@@ -6,6 +6,7 @@ import com.ecommerce.product.enums.ProductStatus;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.product.repository.ProductRepository;
 import com.ecommerce.cart.entity.CartItem;
+import com.ecommerce.cart.mapper.CartMapper;
 import com.ecommerce.cart.repository.CartItemRepository;
 import com.ecommerce.cart.dto.response.CartResponse;
 import com.ecommerce.cart.service.CartService;
@@ -21,6 +22,7 @@ public class CartServiceImpl implements CartService {
 
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final CartMapper cartMapper;
 
     @Override
     @Transactional
@@ -46,7 +48,7 @@ public class CartServiceImpl implements CartService {
                 .build();
         cartItemRepository.save(item);
 
-        return toResponse(item);
+        return cartMapper.toResponse(item);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class CartServiceImpl implements CartService {
     public List<CartResponse> getCart(User buyer) {
         return cartItemRepository.findByBuyerWithProductAndSeller(buyer)
                 .stream()
-                .map(this::toResponse)
+                .map(cartMapper::toResponse)
                 .toList();
     }
 
@@ -70,20 +72,5 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void clearCart(User buyer) {
         cartItemRepository.deleteAllByBuyer(buyer);
-    }
-
-    private CartResponse toResponse(CartItem item) {
-        Product p = item.getProduct();
-        return CartResponse.builder()
-                .cartItemId(item.getId())
-                .productId(p.getId())
-                .productName(p.getName())
-                .brand(p.getBrand())
-                .category(p.getCategory())
-                .price(p.getPrice() != null ? p.getPrice().doubleValue() : null)
-                .sellerName(p.getSeller().getName())
-                .addedAt(item.getAddedAt())
-                .imageUrls(p.getImageUrls())
-                .build();
     }
 }
